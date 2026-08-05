@@ -1,5 +1,36 @@
  @font-face { font-family:VNI-Times; }
  body { margin:0; background:#e9e9e9; font-family:"Times New Roman",serif; }
+
+ /* ---- Màn hình khóa (nhập mật khẩu) ---- */
+ #lockScreen {
+	position:fixed; inset:0; z-index:9999;
+	background:linear-gradient(135deg,#1f2430 0%,#2a3040 100%);
+	display:flex; align-items:center; justify-content:center; padding:20px;
+ }
+ .lock-box {
+	background:#fff; border-radius:12px; padding:36px 34px; width:100%; max-width:400px;
+	box-shadow:0 8px 40px rgba(0,0,0,.35); text-align:center; box-sizing:border-box;
+ }
+ .lock-icon { font-size:42px; line-height:1; margin-bottom:10px; }
+ .lock-box h1 { font-size:20px; margin:0 0 6px; color:#1f2430; }
+ .lock-sub { font-size:13px; color:#666; margin:0 0 22px; }
+ .lock-box input[type="password"] {
+	width:100%; box-sizing:border-box; padding:11px 13px; font-size:15px;
+	border:1px solid #bbb; border-radius:6px; font-family:inherit; text-align:center;
+ }
+ .lock-box input[type="password"]:focus { outline:none; border-color:#2f7dee; }
+ .lock-box button {
+	margin-top:14px; width:100%; background:#2f7dee; color:#fff; border:none;
+	border-radius:6px; padding:11px; font-size:15px; font-weight:bold; cursor:pointer;
+	font-family:inherit;
+ }
+ .lock-box button:hover { opacity:.9; }
+ .lock-box button:disabled { background:#9bb5d8; cursor:not-allowed; }
+ #lockError {
+	display:none; margin-top:14px; padding:10px 12px; border-radius:6px;
+	background:#fdecec; border:1px solid #e5848a; color:#a02128; font-size:13px;
+ }
+ @media print { #lockScreen { display:none !important; } }
  p.MsoNormal, li.MsoNormal, div.MsoNormal { margin:0; font-size:12pt; }
  .app-layout {
 	display:flex;
