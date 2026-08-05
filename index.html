@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Biên bản bàn giao tài sản</title>
+<script src="https://cdn.jsdelivr.net/npm/html-docx-js/dist/html-docx.js" onerror="this.onerror=null;this.src='https://unpkg.com/html-docx-js/dist/html-docx.js';"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="app-layout">
+<div id="editToolbar">
+  <div class="toolbar-row">
+	<button id="toggleEditBtn" type="button">✏️ Chỉnh sửa nhanh</button>
+	<button class="secondary" id="exportDocxBtn" type="button">📄 Xuất Word (.docx)</button>
+	<button class="secondary" id="exportDocBtn" type="button">📄 Xuất Word (.doc)</button>
+	<button class="secondary" id="exportPdfBtn" type="button">🖨️ In / Xuất PDF</button>
+  </div>
+  <div id="editPanel" class="open">
+	<label>Ngày bàn giao
+	  <input type="date" id="inpNgay" value="2025-07-09">
+	</label>
+	<div class="asset-panel-grid">
+	  <label style="flex:1;">Người bàn giao (Bên A)
+		<input type="text" id="inpNguoiGiao" value="ĐOÀN HỮU VINH">
+	  </label>
+	  <label style="flex:1;">Bộ phận
+		<input type="text" id="inpBoPhan" value="IT">
+	  </label>
+	</div>
+	<div class="asset-panel-grid">
+	  <label style="flex:1;">Người nhận (Bên B)
+		<input type="text" id="inpNguoiNhan" value="NGUYỄN BÁ LINH">
+	  </label>
+	  <label style="flex:1;">Phòng ban
+		<input type="text" id="inpPhongBan" value="B2C SALES">
+	  </label>
+	</div>
+	<label>Quản lý trực tiếp
+	  <input type="text" id="inpQuanLy" value="HỒ HỮU THƯƠNG">
+	</label>
+	<div class="panel-section-title">📦 Tài sản phần cứng</div>
+	<div id="assetPanelList"></div>
+  </div>
+</div>
+
+<div class="doc-wrapper">
+<div class="WordSection1">
+
+<p class="center" style="margin:0 0 8px;"><img width="338" height="49" src="index_files/image001.png" alt="logo"></p>
+
+<p class="title">BIÊN BẢN BÀN GIAO TÀI SẢN</p>
+<p class="title" style="font-size:20pt;">(Thiết bị CNTT)</p>
+
+<p class="justify" style="margin-top:12px;">Hôm nay, <span id="ngayCauVan">ngày 09 tháng 07 năm 2025</span>, chúng tôi gồm có: </p>
+
+<table class="plain-table" width="100%">
+ <tr>
+  <td width="28%">BÊN A - NGƯỜI GIAO:</td>
+  <td width="36%" class="bold"><span class="nguoiGiao">ĐOÀN HỮU VINH</span></td>
+  <td width="36%">BỘ PHẬN:&nbsp;&nbsp;&nbsp;&nbsp;<b><span class="boPhan">IT</span></b></td>
+ </tr>
+ <tr>
+  <td>BÊN B - NGƯỜI NHẬN:</td>
+  <td class="bold"><span class="nguoiNhan">NGUYỄN BÁ LINH</span></td>
+  <td>PHÒNG BAN: <b><span class="phongBan">B2C SALES</span></b></td>
+ </tr>
+</table>
+
+<p class="justify" style="margin-top:6pt;">Tại Công Ty Cổ Phần Dầu Nhớt và Hóa Chất Việt Nam, cùng tiến hành giao và nhận các tài sản theo danh sách sau:</p>
+
+<table class="doc-table" id="hwTable" style="margin-top:8px;">
+ <thead>
+ <tr>
+  <td colspan="6" class="bold">I. PHẦN CỨNG</td>
+ </tr>
+ <tr class="bold center">
+  <td width="5%">STT</td>
+  <td width="21%">Tên Tài Sản</td>
+  <td width="5%">SL</td>
+  <td width="11%">Mã Tài Sản</td>
+  <td width="15%">Giá trị tài sản (Theo hóa đơn – chưa VAT)</td>
+  <td width="20%">Ghi Chú</td>
+ </tr>
+ </thead>
+ <tbody id="hwBody">
+ <tr>
+  <td class="center">
+	<span class="row-stt">01</span>
+	<button class="row-del-btn" type="button" title="Xóa dòng">✕</button>
+  </td>
+  <td>
+	<span class="editable-field" data-role="ten" contenteditable="true">Dell Pro 14 Plus XCTO</span>
+	<ul class="plain">
+	  <li>CPU: <span class="editable-field" contenteditable="true">Core Ultra 5 236U</span></li>
+	  <li>RAM: <span class="editable-field" contenteditable="true">DDR5-8533 MHz 16GB</span></li>
+	  <li>Storage: <span class="editable-field" contenteditable="true">(M2 NVMe) 512 GB SSD</span></li>
+	</ul>
+  </td>
+  <td class="center"><span class="editable-field" data-role="sl" contenteditable="true">01</span></td>
+  <td class="center bold"><span class="editable-field" data-role="ma" contenteditable="true">DMLB6F4</span></td>
+  <td class="center"><span class="editable-field" data-role="gia" contenteditable="true">30.135.000 VNĐ</span></td>
+  <td>
+	<ul class="plain row-ghichu-list">
+	  <li>Tình trạng: <span class="editable-field" data-role="tinhtrang" contenteditable="true">Mới 100%.</span></li>
+	  <li>Ngày mua: <span class="editable-field" data-role="ngaymua" contenteditable="true">24/11/2025</span></li>
+	  <li>Bảo hành <span class="editable-field" data-role="baohanh" contenteditable="true">3 năm Dell</span></li>
+		</ul>
+	<button class="row-thuhoi-btn" type="button">+ Thu hồi thiết bị cũ</button>
+  </td>
+ </tr>
+ <tr>
+  <td class="center">
+	<span class="row-stt">02</span>
+	<button class="row-del-btn" type="button" title="Xóa dòng">✕</button>
+  </td>
+  <td><span class="editable-field" data-role="ten" contenteditable="true">Dell Adapter</span></td>
+  <td class="center"><span class="editable-field" data-role="sl" contenteditable="true">01</span></td>
+  <td class="center"><span class="editable-field" data-role="ma" contenteditable="true">&nbsp;</span></td>
+  <td class="center"><span class="editable-field" data-role="gia" contenteditable="true">&nbsp;</span></td>
+  <td>
+	<ul class="plain row-ghichu-list">
+	  <li>Tình trạng: <span class="editable-field" data-role="tinhtrang" contenteditable="true">Mới 100%.</span></li>
+	  <li>Ngày mua: <span class="editable-field" data-role="ngaymua" contenteditable="true">24/11/2025</span></li>
+	  <li>Bảo hành <span class="editable-field" data-role="baohanh" contenteditable="true">3 năm Dell</span></li>
+	</ul>
+	<button class="row-thuhoi-btn" type="button">+ Thu hồi thiết bị cũ</button>
+  </td>
+ </tr>
+ </tbody>
+</table>
+<div class="edit-hint" style="margin-top:4px;">
+  <button id="addHwRowBtn" type="button" style="background:#2f7dee;color:#fff;border:none;border-radius:5px;padding:5px 12px;font-size:12px;cursor:pointer;font-family:Arial,sans-serif;">+ Thêm dòng thiết bị</button>
+  <span style="font-size:10pt;color:#1a73e8;margin-left:8px;">* Nhấp trực tiếp vào ô có viền chấm để sửa nhanh (model, SL, mã tài sản, giá trị...).</span>
+</div>
+
+<table class="doc-table" style="margin-top:8px;">
+ <tr>
+  <td colspan="4" class="bold">II. PHẦN MỀM</td>
+ </tr>
+ <tr class="bold center">
+  <td width="5%">STT</td>
+  <td width="50%">Tên Phần mềm</td>
+  <td width="15%">Loại</td>
+  <td width="30%">Ghi Chú</td>
+ </tr>
+ <tr>
+  <td class="center">01</td>
+  <td>Microsoft Windows 11 Enterprise 64bit</td>
+  <td class="center">Bản quyền</td>
+  <td>Đã được cài đặt và kích hoạt bản quyền</td>
+ </tr>
+ <tr>
+  <td class="center">02</td>
+  <td>Microsoft Office 365 Pro Plus</td>
+  <td class="center">Bản quyền</td>
+  <td>Đã được cài đặt và kích hoạt bản quyền</td>
+ </tr>
+ <tr>
+  <td class="center">03</td>
+  <td>Các phần mềm miễn phí hỗ trợ công việc.</td>
+  <td class="center">Miễn phí</td>
+  <td>Đã được cài đặt</td>
+ </tr>
+</table>
+
+<p style="margin-top:6pt;" class="justify">Bên B xác nhận đã nhận đầy đủ tài sản theo danh sách ở trên với tình trạng hoạt động tốt, đồng thời cam kết thực hiện đầy đủ và đúng các điều khoản sau:</p>
+
+<p class="section-title">I. <u>Cam kết:</u></p>
+<ul class="plain">
+  <li>Tài sản chỉ sử dụng cho mục đích phục vụ công việc.</li>
+  <li>Có trách nhiệm bảo quản, giữ gìn tài sản cẩn thận.</li>
+  <li>Phải sử dụng theo đúng hướng dẫn kỹ thuật và chính sách của Công ty.</li>
+  <li>Tuyệt đối không can thiệp vào phần cứng và phần mềm của tài sản.</li>
+  <li>Không được tự ý đem tài sản của Công Ty ra sửa tại các cửa hàng hoặc các trung tâm sửa máy vi tính bên ngoài với bất kỳ lý do nào.</li>
+</ul>
+
+<div class="page-break"></div>
+
+<p class="section-title">II. Đền bù:</p>
+<p class="justify"><b><i>Lưu ý:</i></b></p>
+<ul class="plain">
+  <li><b><i>Các điều khoản đền bù thuộc chính sách đền bù tài sản của Công ty do phòng Hành Chính Nhân Sự ban hành.</i></b></li>
+  <li><b><i>Mọi thắc mắc vui lòng liên hệ phòng Hành Chính Nhân Sự để được giải đáp.</i></b></li>
+  <li>Trong thời gian sử dụng, nếu xảy ra hư hỏng do lỗi của Bên B: Bên B phải chịu toàn bộ chi phí sửa chữa, thay thế (thông qua Trung tâm bảo hành chính hãng hoặc trung tâm được ủy quyền chính thức từ hãng và được kiểm tra bởi bộ phận IT).</li>
+  <li>Trong trường thời gian sử dụng, trường hợp làm mất và bất cứ lý do gì (trừ thiên tai, địch họa, hỏa hoạn): Bên B phải đền bù theo giá trị còn lại của các tài sản bị mất tại thời điểm mất (do Phòng Tài Chính Kế Toán của Công Ty thẩm định giá trị khấu hao tài sản) nhưng không thấp hơn 20% nguyên giá (trước thuế).</li>
+  <li>Các phụ kiện đi kèm (Balo, Chuột, Adapter sạc, …): Chỉ cấp lần đầu tiên, trong thời gian sử dụng. khi xảy ra hư hỏng do lỗi của bên B hoặc mất mát (bất kỳ lý do gì) phải tự trang bị lại (thiết bị phải chính hãng cùng loại và được kiểm tra bởi bộ phận IT).</li>
+</ul>
+
+<p class="section-title">III. Loại trừ đền bù cho các sự cố hỏng hóc tài sản sau:</p>
+<ul class="plain">
+  <li>Các hư hỏng do tự nhiên trong quá trình sử dụng, Bên B sẽ không phải đền bù:</li>
+</ul>
+<ul class="plain sub" style="margin-left:24px;">
+  <li>Hư, chai Pin Laptop.</li>
+  <li>Hư Adapter Sạc Laptop (Phải bàn giao lại Adaptor hư khi nhận Adapter mới)</li>
+  <li>Hư, Lỗi bàn phím Laptop không do chất lỏng đổ vào.</li>
+  <li>Hư chuột không dây (Đảm bảo chuột không dây hư phải còn Receiver)</li>
+  <li>Hư các linh kiện, thiết bị của Desktop không do chất lỏng đổ vào.</li>
+  <li>Hư các thiết bị dùng chung không phải do người dùng tác động, can thiệp vào phần cứng, đổ chất lỏng.</li>
+</ul>
+
+<p class="section-title">IV. Hoàn Trả/Thu hồi tài sản:</p>
+<ul class="plain">
+  <li>Bên B phải hoàn trả đầy đủ các tài sản đã được bàn giao theo Danh sách tài sản đã nhận ở trên với điều kiện phải đảm bảo hoàn thành xong các điều khoản đền bù (nếu có) cho Phòng HCNS và Phòng Kế Toán trước khi nghỉ việc.</li>
+  <li>Ban Tổng Giám Đốc có thể kiểm tra hoặc thu hồi các tài sản đã bàn giao ở trên bất cứ lúc nào nếu thấy cần thiết theo yêu cầu công việc.</li>
+</ul>
+
+<p class="justify">Biên bản được lập thành 02 (hai) bản, bên giao và bên nhận mỗi bên giữ 01 (một) bản, có giá trị ngang nhau.</p>
+
+<table class="plain-table center" width="100%" style="margin-top:20px;">
+ <tr class="bold">
+  <td width="33%">NGƯỜI NHẬN</td>
+  <td width="34%">QUẢN LÝ TRỰC TIẾP</td>
+  <td width="33%">NGƯỜI GIAO</td>
+ </tr>
+ <tr>
+  <td style="height:80px;">&nbsp;</td>
+  <td style="height:80px;">&nbsp;</td>
+  <td style="height:80px;">&nbsp;</td>
+ </tr>
+ <tr class="bold">
+  <td><span class="nguoiNhan">NGUYỄN BÁ LINH</span></td>
+  <td><span class="quanLy">HỒ HỮU THƯƠNG</span></td>
+  <td><span class="nguoiGiao">ĐOÀN HỮU VINH</span></td>
+ </tr>
+</table>
+
+</div>
+</div>
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>
