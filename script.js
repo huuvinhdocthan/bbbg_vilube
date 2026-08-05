@@ -372,6 +372,7 @@
 	initDatePicker(String(today.getFullYear()), pad(today.getMonth() + 1), pad(today.getDate()));
   })();
   document.getElementById('inpNguoiGiao').addEventListener('input', updateNguoiGiao);
+  document.getElementById('inpNguoiGiao').addEventListener('change', updateNguoiGiao);
   document.getElementById('inpNguoiNhan').addEventListener('input', updateNguoiNhan);
   document.getElementById('inpQuanLy').addEventListener('input', updateQuanLy);
   document.getElementById('inpBoPhan').addEventListener('input', updateBoPhan);
@@ -447,7 +448,36 @@
 	setTimeout(function () { document.title = originalTitle; }, 1000);
   });
 
-  // Dựng nội dung HTML dùng chung cho cả xuất .docx và .doc
+  // Chuyển 1 thẻ <img> sang base64 (data URI) để file xuất tự chứa ảnh, không phụ thuộc đường dẫn ngoài.
+  // Vẽ qua <canvas> từ ảnh gốc đã tải trên trang (tránh lỗi fetch/CORS khi mở file bằng file://).
+  function imgToDataUrl(imgEl) {
+	return new Promise(function (resolve) {
+	  try {
+		var srcImg = document.querySelector('.WordSection1 img[src="' + imgEl.getAttribute('src') + '"]');
+		if (!srcImg) srcImg = imgEl;
+		var draw = function (readyImg) {
+		  var canvas = document.createElement('canvas');
+		  canvas.width = readyImg.naturalWidth || readyImg.width;
+		  canvas.height = readyImg.naturalHeight || readyImg.height;
+		  var ctx = canvas.getContext('2d');
+		  ctx.drawImage(readyImg, 0, 0);
+		  var dataUrl = canvas.toDataURL('image/png');
+		  imgEl.setAttribute('src', dataUrl);
+		  resolve();
+		};
+		if (srcImg.complete && srcImg.naturalWidth > 0) {
+		  draw(srcImg);
+		} else {
+		  srcImg.addEventListener('load', function () { draw(srcImg); });
+		  srcImg.addEventListener('error', function () { resolve(); });
+		}
+	  } catch (err) {
+		resolve(); // nếu lỗi (vd. canvas bị "tainted") thì giữ nguyên src cũ
+	  }
+	});
+  }
+
+  // Dựng nội dung HTML dùng chung cho cả xuất .docx và .doc (bất đồng bộ vì cần nhúng ảnh base64)
   function buildExportHtml() {
 	var clone = document.querySelector('.WordSection1').cloneNode(true);
 	clone.querySelectorAll('.editable-field').forEach(function (el) {
@@ -462,21 +492,36 @@
 	if (document.getElementById('sigTable').classList.contains('hide-quanly')) {
 	  clone.querySelectorAll('.col-quanly').forEach(function (el) { el.remove(); });
 	}
-	var content = clone.outerHTML;
-	return '<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" ' +
-	  'xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">' +
-	  '<head><meta charset="utf-8"><title>' + t('docTitle') + '</title>' +
-	  '<!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View>' +
-	  '<w:DoNotOptimizeForBrowser/></w:WordDocument></xml><![endif]-->' +
-	  '<style>@page{size:21cm 29.7cm;margin:1.4cm 1.6cm;} ' +
-	  'body{font-family:"Times New Roman",serif;font-size:12pt;line-height:1.2;text-align:justify;} ' +
-	  'p{margin-bottom:4pt;} table{border-collapse:collapse;} ' +
-	  'table.doc-table td{border:1px solid #000;padding:4px 6px;font-size:10.5pt;vertical-align:middle;text-align:left;} ' +
-	  'table.plain-table td{padding:2px 6px;vertical-align:middle;text-align:left;} .center{text-align:center;} ' +
-	  '.justify{text-align:justify;} .bold{font-weight:bold;} .title{font-size:20pt;font-weight:bold;text-align:center;margin:0;} ' +
-	  '.section-title{font-weight:bold;} ul.plain{margin:0;padding-left:36px;} ' +
-	  'ul.plain li{margin-bottom:2pt;} ' +
-	  '.page-break{page-break-before:always;mso-page-break-before:always;}</style></head><body>' + content + '</body></html>';
+
+	var imgTasks = Array.prototype.map.call(clone.querySelectorAll('img'), imgToDataUrl);
+
+	return Promise.all(imgTasks).then(function () {
+	  var content = clone.outerHTML;
+	  return '<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" ' +
+		'xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">' +
+		'<head><meta charset="utf-8"><title>' + t('docTitle') + '</title>' +
+		'<!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View>' +
+		'<w:DoNotOptimizeForBrowser/></w:WordDocument></xml><![endif]-->' +
+		'<style>@page{size:21cm 29.7cm;margin:1.4cm 1.6cm;} ' +
+		'*{font-family:"Times New Roman",serif;mso-ascii-font-family:"Times New Roman";' +
+		'mso-hansi-font-family:"Times New Roman";mso-bidi-font-family:"Times New Roman";' +
+		'mso-fareast-font-family:"Times New Roman";} ' +
+		'body{font-family:"Times New Roman",serif;font-size:12pt;line-height:1.2;text-align:justify;} ' +
+		'p, span, td, li, div, b, i, u {font-family:"Times New Roman",serif;} ' +
+		'p{margin:0 0 4pt;} table{border-collapse:collapse;width:100%;} ' +
+		'table.doc-table td{border:1px solid #000;padding:4px 6px;font-size:10.5pt;vertical-align:middle;text-align:left;} ' +
+		'table.plain-table td{padding:2px 6px;vertical-align:middle;} .center{text-align:center;} ' +
+		'.justify{text-align:justify;} .bold{font-weight:bold;} ' +
+		'.title{font-size:20pt;font-weight:bold;text-align:center;margin:0;line-height:1.5;} ' +
+		'.section-title{font-weight:bold;font-size:12pt;} ' +
+		'ul.plain{margin:0;padding-left:36px;} ' +
+		'ul.plain li{list-style:none;position:relative;margin-bottom:6px;text-align:justify;} ' +
+		'ul.plain li:before{content:"-";position:absolute;left:-14px;} ' +
+		'ul.sub li:before{content:"o";font-family:"Courier New";} ' +
+		'table.doc-table ul.plain li{text-align:left;margin-bottom:2pt;} ' +
+		'.row-ghichu-list{padding-left:18px !important;} ' +
+		'.page-break{page-break-before:always;mso-page-break-before:always;}</style></head><body>' + content + '</body></html>';
+	});
   }
 
   function downloadBlob(blob, filename) {
@@ -490,20 +535,22 @@
 
   // Xuất .docx (chuẩn OOXML thật, cần mạng để tải thư viện)
   document.getElementById('exportDocxBtn').addEventListener('click', function () {
-	var html = buildExportHtml();
 	if (typeof htmlDocx === 'undefined') {
 	  alert(t('alertNoLib'));
 	  return;
 	}
-	var blob = htmlDocx.asBlob(html);
-	downloadBlob(blob, buildFileBaseName() + '.docx');
+	buildExportHtml().then(function (html) {
+	  var blob = htmlDocx.asBlob(html);
+	  downloadBlob(blob, buildFileBaseName() + '.docx');
+	});
   });
 
   // Xuất .doc kiểu cũ (HTML nhúng, không cần mạng, Word vẫn mở được)
   document.getElementById('exportDocBtn').addEventListener('click', function () {
-	var html = buildExportHtml();
-	var blob = new Blob(['﻿', html], { type: 'application/msword' });
-	downloadBlob(blob, buildFileBaseName() + '.doc');
+	buildExportHtml().then(function (html) {
+	  var blob = new Blob(['﻿', html], { type: 'application/msword' });
+	  downloadBlob(blob, buildFileBaseName() + '.doc');
+	});
   });
 
   // Khởi tạo

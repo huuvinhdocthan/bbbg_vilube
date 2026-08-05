@@ -25,7 +25,7 @@
  }
  table.doc-table { border-collapse:collapse; width:100%; }
  table.doc-table td { border:1px solid #000; padding:4px 6px; vertical-align:middle; font-size:10.5pt; text-align:left; }
- table.plain-table td { padding:2px 6px; vertical-align:middle; text-align:left; }
+ table.plain-table td { padding:2px 6px; vertical-align:middle; }
  .center { text-align:center; }
  .justify { text-align:justify; }
  .bold { font-weight:bold; }
@@ -36,7 +36,7 @@
  ul.plain li:before { content:"-"; position:absolute; left:-14px; }
  ul.sub li:before { content:"o"; font-family:"Courier New"; }
  .row-ghichu-list { padding-left:18px !important; }
- table.doc-table ul.plain li, table.plain-table ul.plain li { text-align:left; }
+ table.doc-table ul.plain li { text-align:left; }
  .page-break { page-break-before: always; }
  .editable-field { border-bottom:1px dashed #1a73e8; background:#eef4ff; padding:0 2px; text-align:left; }
  .editable-field[data-role="ten"] {
@@ -49,17 +49,17 @@
  .row-del-btn:hover { opacity:.85; }
  .row-thuhoi-btn {
 	background:transparent; color:#1a73e8; border:1px dashed #1a73e8; border-radius:4px;
-	font-size:10pt; padding:2px 8px; cursor:pointer; margin-top:4px; font-family:Arial, sans-serif;
+	font-size:10pt; padding:2px 8px; cursor:pointer; margin-top:4px; font-family:"Times New Roman", serif;
  }
  .row-thuhoi-btn:hover { background:#eef4ff; }
 
  /* ---- Toolbar (sidebar bên trái) ---- */
  #editToolbar {
 	position:sticky; top:20px; z-index:100;
-	width:300px; flex-shrink:0;
+	width:340px; flex-shrink:0;
 	background:#1f2430; color:#fff;
 	padding:14px 16px; border-radius:8px;
-	font-family:Arial, sans-serif; font-size:13px;
+	font-family:"Times New Roman", serif; font-size:13px;
 	max-height:calc(100vh - 40px);
 	overflow-y:auto;
  }
@@ -89,9 +89,11 @@
  }
  #editPanel.open { display:flex; }
  #editPanel label { display:flex; flex-direction:column; gap:4px; font-size:12px; color:#c9d1e0; min-width:0; }
- #editPanel input {
+ #editPanel input, #editPanel select {
 	padding:6px 8px; border-radius:5px; border:1px solid #555; font-size:13px; width:100%; box-sizing:border-box; min-width:0;
+	background:#1f2430; color:#fff; cursor:pointer;
  }
+ #editPanel input[type="text"] { cursor:text; }
  .date-picker-grid { display:flex; gap:6px; }
  .date-picker-grid select {
 	flex:1 1 0; min-width:0; padding:6px 4px; border-radius:5px; border:1px solid #555;

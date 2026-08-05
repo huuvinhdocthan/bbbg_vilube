@@ -33,7 +33,10 @@
 	</label>
 	<div class="asset-panel-grid">
 	  <label style="flex:1;"><span data-en="Handed over by (Party A)">Người bàn giao (Bên A)</span>
-		<input type="text" id="inpNguoiGiao" value="ĐOÀN HỮU VINH">
+		<select id="inpNguoiGiao">
+		  <option value="ĐOÀN HỮU VINH" selected>ĐOÀN HỮU VINH</option>
+		  <option value="CAO MINH TÂM">CAO MINH TÂM</option>
+		</select>
 	  </label>
 	  <label style="flex:1;"><span data-en="Department">Bộ phận</span>
 		<input type="text" id="inpBoPhan" value="IT">
@@ -145,7 +148,7 @@
  </tbody>
 </table>
 <div class="edit-hint" style="margin-top:4px;">
-  <button id="addHwRowBtn" type="button" style="background:#2f7dee;color:#fff;border:none;border-radius:5px;padding:5px 12px;font-size:12px;cursor:pointer;font-family:Arial,sans-serif;"><span data-en="+ Add equipment row">+ Thêm dòng thiết bị</span></button>
+  <button id="addHwRowBtn" type="button" style="background:#2f7dee;color:#fff;border:none;border-radius:5px;padding:5px 12px;font-size:12px;cursor:pointer;font-family:'Times New Roman',serif;"><span data-en="+ Add equipment row">+ Thêm dòng thiết bị</span></button>
   <span style="font-size:10pt;color:#1a73e8;margin-left:8px;" data-en="* Click directly on any dotted-underline field to edit quickly (model, qty, asset code, value...).">* Nhấp trực tiếp vào ô có viền chấm để sửa nhanh (model, SL, mã tài sản, giá trị...).</span>
 </div>
 
