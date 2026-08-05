@@ -69,6 +69,18 @@
  }
  #editToolbar button.secondary { background:#3a4050; }
  #editToolbar button:hover { opacity:.88; }
+
+ /* ---- Nút chuyển ngôn ngữ VI / EN ---- */
+ .lang-switch {
+	display:flex; gap:0; margin-bottom:12px;
+	background:#11151d; border-radius:6px; padding:3px;
+ }
+ #editToolbar .lang-switch button {
+	flex:1 1 0; width:auto; background:transparent; color:#8fa0c0;
+	border-radius:4px; padding:6px 0; font-size:12px; font-weight:bold;
+ }
+ #editToolbar .lang-switch button.active { background:#2f7dee; color:#fff; }
+ #editToolbar .lang-switch button:hover { opacity:1; color:#fff; }
  #editPanel {
 	display:none; margin-top:12px; padding-top:12px;
 	border-top:1px solid #3a4050;

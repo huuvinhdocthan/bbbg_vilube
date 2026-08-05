@@ -13,40 +13,44 @@
 
 <div class="app-layout">
 <div id="editToolbar">
+  <div class="lang-switch">
+	<button id="langViBtn" type="button" class="lang-btn active">🇻🇳 VI</button>
+	<button id="langEnBtn" type="button" class="lang-btn">🇬🇧 EN</button>
+  </div>
   <div class="toolbar-row">
-	<button id="toggleEditBtn" type="button">✏️ Chỉnh sửa nhanh</button>
-	<button class="secondary" id="exportDocxBtn" type="button">📄 Xuất Word (.docx)</button>
-	<button class="secondary" id="exportDocBtn" type="button">📄 Xuất Word (.doc)</button>
-	<button class="secondary" id="exportPdfBtn" type="button">🖨️ In / Xuất PDF</button>
+	<button id="toggleEditBtn" type="button"><span data-en="✏️ Quick edit">✏️ Chỉnh sửa nhanh</span></button>
+	<button class="secondary" id="exportDocxBtn" type="button"><span data-en="📄 Export Word (.docx)">📄 Xuất Word (.docx)</span></button>
+	<button class="secondary" id="exportDocBtn" type="button"><span data-en="📄 Export Word (.doc)">📄 Xuất Word (.doc)</span></button>
+	<button class="secondary" id="exportPdfBtn" type="button"><span data-en="🖨️ Print / Export PDF">🖨️ In / Xuất PDF</span></button>
   </div>
   <div id="editPanel" class="open">
-	<label>Ngày bàn giao
+	<label><span data-en="Handover date">Ngày bàn giao</span>
 	  <input type="date" id="inpNgay" value="2026-08-05">
 	</label>
 	<div class="asset-panel-grid">
-	  <label style="flex:1;">Người bàn giao (Bên A)
+	  <label style="flex:1;"><span data-en="Handed over by (Party A)">Người bàn giao (Bên A)</span>
 		<input type="text" id="inpNguoiGiao" value="ĐOÀN HỮU VINH">
 	  </label>
-	  <label style="flex:1;">Bộ phận
+	  <label style="flex:1;"><span data-en="Department">Bộ phận</span>
 		<input type="text" id="inpBoPhan" value="IT">
 	  </label>
 	</div>
 	<div class="asset-panel-grid">
-	  <label style="flex:1;">Người nhận (Bên B)
+	  <label style="flex:1;"><span data-en="Received by (Party B)">Người nhận (Bên B)</span>
 		<input type="text" id="inpNguoiNhan" value="NGUYỄN VĂN A">
 	  </label>
-	  <label style="flex:1;">Phòng ban
+	  <label style="flex:1;"><span data-en="Division">Phòng ban</span>
 		<input type="text" id="inpPhongBan" value="B2C SALES">
 	  </label>
 	</div>
 	<label class="checkbox-row">
 	  <input type="checkbox" id="chkQuanLy" checked style="width:auto;">
-	  Có Quản lý trực tiếp
+	  <span data-en="Include Direct Manager">Có Quản lý trực tiếp</span>
 	</label>
-	<label>Quản lý trực tiếp
+	<label><span data-en="Direct Manager">Quản lý trực tiếp</span>
 	  <input type="text" id="inpQuanLy" value="HỒ HỮU THƯƠNG">
 	</label>
-	<div class="panel-section-title">📦 Tài sản phần cứng</div>
+	<div class="panel-section-title"><span data-en="📦 Hardware assets">📦 Tài sản phần cứng</span></div>
 	<div id="assetPanelList"></div>
   </div>
 </div>
@@ -56,38 +60,38 @@
 
 <p class="center" style="margin:0 0 8px;"><img width="338" height="49" src="index_files/image001.png" alt="logo"></p>
 
-<p class="title">BIÊN BẢN BÀN GIAO TÀI SẢN</p>
-<p class="title" style="font-size:20pt;">(Thiết bị CNTT)</p>
+<p class="title"><span data-en="ASSET HANDOVER MINUTES">BIÊN BẢN BÀN GIAO TÀI SẢN</span></p>
+<p class="title" style="font-size:20pt;"><span data-en="(IT Equipment)">(Thiết bị CNTT)</span></p>
 
-<p class="justify" style="margin-top:12px;">Hôm nay, <span id="ngayCauVan">ngày 05 tháng 08 năm 2026</span>, chúng tôi gồm có: </p>
+<p class="justify" style="margin-top:12px;"><span data-en="Today, ">Hôm nay, </span><span id="ngayCauVan">ngày 05 tháng 08 năm 2026</span><span data-en=", the undersigned parties include: ">, chúng tôi gồm có: </span></p>
 
 <table class="plain-table" width="100%">
  <tr>
-  <td width="28%">BÊN A - NGƯỜI GIAO:</td>
+  <td width="28%"><span data-en="PARTY A - DELIVERED BY:">BÊN A - NGƯỜI GIAO:</span></td>
   <td width="36%" class="bold"><span class="nguoiGiao">ĐOÀN HỮU VINH</span></td>
-  <td width="36%">BỘ PHẬN:&nbsp;&nbsp;&nbsp;&nbsp;<b><span class="boPhan">IT</span></b></td>
+  <td width="36%"><span data-en="DEPARTMENT:">BỘ PHẬN:</span>&nbsp;&nbsp;&nbsp;&nbsp;<b><span class="boPhan">IT</span></b></td>
  </tr>
  <tr>
-  <td>BÊN B - NGƯỜI NHẬN:</td>
+  <td><span data-en="PARTY B - RECEIVED BY:">BÊN B - NGƯỜI NHẬN:</span></td>
   <td class="bold"><span class="nguoiNhan">NGUYỄN VĂN A</span></td>
-  <td>PHÒNG BAN: <b><span class="phongBan">B2C SALES</span></b></td>
+  <td><span data-en="DIVISION:">PHÒNG BAN:</span> <b><span class="phongBan">B2C SALES</span></b></td>
  </tr>
 </table>
 
-<p class="justify" style="margin-top:6pt;">Tại Công Ty Cổ Phần Dầu Nhớt và Hóa Chất Việt Nam, cùng tiến hành giao và nhận các tài sản theo danh sách sau:</p>
+<p class="justify" style="margin-top:6pt;"><span data-en="At Vietnam Lubricants and Chemicals Joint Stock Company, the parties jointly carried out the handover and receipt of the following assets:">Tại Công Ty Cổ Phần Dầu Nhớt và Hóa Chất Việt Nam, cùng tiến hành giao và nhận các tài sản theo danh sách sau:</span></p>
 
 <table class="doc-table" id="hwTable" style="margin-top:8px;">
  <thead>
  <tr>
-  <td colspan="6" class="bold">I. PHẦN CỨNG</td>
+  <td colspan="6" class="bold"><span data-en="I. HARDWARE">I. PHẦN CỨNG</span></td>
  </tr>
  <tr class="bold center">
-  <td width="5%">STT</td>
-  <td width="21%">Tên Tài Sản</td>
-  <td width="5%">SL</td>
-  <td width="11%">Mã Tài Sản</td>
-  <td width="15%">Giá trị tài sản (Theo hóa đơn – chưa VAT)</td>
-  <td width="20%">Ghi Chú</td>
+  <td width="5%"><span data-en="No.">STT</span></td>
+  <td width="21%"><span data-en="Asset Name">Tên Tài Sản</span></td>
+  <td width="5%"><span data-en="Qty">SL</span></td>
+  <td width="11%"><span data-en="Asset Code">Mã Tài Sản</span></td>
+  <td width="15%"><span data-en="Asset value (per invoice – excl. VAT)">Giá trị tài sản (Theo hóa đơn – chưa VAT)</span></td>
+  <td width="20%"><span data-en="Notes">Ghi Chú</span></td>
  </tr>
  </thead>
  <tbody id="hwBody">
@@ -99,9 +103,9 @@
   <td>
 	<span class="editable-field" data-role="ten" contenteditable="true">Dell Pro 14 Plus XCTO</span>
 	<ul class="plain">
-	  <li>CPU: <span class="editable-field" contenteditable="true">Core Ultra 5 236U</span></li>
-	  <li>RAM: <span class="editable-field" contenteditable="true">DDR5-8533 MHz 16GB</span></li>
-	  <li>Storage: <span class="editable-field" contenteditable="true">(M2 NVMe) 512 GB SSD</span></li>
+	  <li><span data-en="CPU: ">CPU: </span><span class="editable-field" contenteditable="true">Core Ultra 5 236U</span></li>
+	  <li><span data-en="RAM: ">RAM: </span><span class="editable-field" contenteditable="true">DDR5-8533 MHz 16GB</span></li>
+	  <li><span data-en="Storage: ">Storage: </span><span class="editable-field" contenteditable="true">(M2 NVMe) 512 GB SSD</span></li>
 	</ul>
   </td>
   <td class="center"><span class="editable-field" data-role="sl" contenteditable="true">01</span></td>
@@ -109,10 +113,10 @@
   <td class="center"><span class="editable-field" data-role="gia" contenteditable="true">30.135.000 VNĐ</span></td>
   <td>
 	<ul class="plain row-ghichu-list">
-	  <li>Tình trạng: <span class="editable-field" data-role="tinhtrang" contenteditable="true">Mới 100%.</span></li>
-	  <li>Ngày mua: <span class="editable-field" data-role="ngaymua" contenteditable="true">24/11/2025</span></li>
-	  <li>Bảo hành <span class="editable-field" data-role="baohanh" contenteditable="true">3 năm Dell</span></li>
-		</ul>
+	  <li><span data-en="Condition: ">Tình trạng: </span><span class="editable-field" data-role="tinhtrang" contenteditable="true">Mới 100%.</span></li>
+	  <li><span data-en="Purchase date: ">Ngày mua: </span><span class="editable-field" data-role="ngaymua" contenteditable="true">24/11/2025</span></li>
+	  <li><span data-en="Warranty ">Bảo hành </span><span class="editable-field" data-role="baohanh" contenteditable="true">3 năm Dell</span></li>
+	</ul>
 	<button class="row-thuhoi-btn" type="button">+ Thu hồi thiết bị cũ</button>
   </td>
  </tr>
@@ -127,9 +131,9 @@
   <td class="center"><span class="editable-field" data-role="gia" contenteditable="true">&nbsp;</span></td>
   <td>
 	<ul class="plain row-ghichu-list">
-	  <li>Tình trạng: <span class="editable-field" data-role="tinhtrang" contenteditable="true">Mới 100%.</span></li>
-	  <li>Ngày mua: <span class="editable-field" data-role="ngaymua" contenteditable="true">24/11/2025</span></li>
-	  <li>Bảo hành <span class="editable-field" data-role="baohanh" contenteditable="true">3 năm Dell</span></li>
+	  <li><span data-en="Condition: ">Tình trạng: </span><span class="editable-field" data-role="tinhtrang" contenteditable="true">Mới 100%.</span></li>
+	  <li><span data-en="Purchase date: ">Ngày mua: </span><span class="editable-field" data-role="ngaymua" contenteditable="true">24/11/2025</span></li>
+	  <li><span data-en="Warranty ">Bảo hành </span><span class="editable-field" data-role="baohanh" contenteditable="true">3 năm Dell</span></li>
 	</ul>
 	<button class="row-thuhoi-btn" type="button">+ Thu hồi thiết bị cũ</button>
   </td>
@@ -137,89 +141,89 @@
  </tbody>
 </table>
 <div class="edit-hint" style="margin-top:4px;">
-  <button id="addHwRowBtn" type="button" style="background:#2f7dee;color:#fff;border:none;border-radius:5px;padding:5px 12px;font-size:12px;cursor:pointer;font-family:Arial,sans-serif;">+ Thêm dòng thiết bị</button>
-  <span style="font-size:10pt;color:#1a73e8;margin-left:8px;">* Nhấp trực tiếp vào ô có viền chấm để sửa nhanh (model, SL, mã tài sản, giá trị...).</span>
+  <button id="addHwRowBtn" type="button" style="background:#2f7dee;color:#fff;border:none;border-radius:5px;padding:5px 12px;font-size:12px;cursor:pointer;font-family:Arial,sans-serif;"><span data-en="+ Add equipment row">+ Thêm dòng thiết bị</span></button>
+  <span style="font-size:10pt;color:#1a73e8;margin-left:8px;" data-en="* Click directly on any dotted-underline field to edit quickly (model, qty, asset code, value...).">* Nhấp trực tiếp vào ô có viền chấm để sửa nhanh (model, SL, mã tài sản, giá trị...).</span>
 </div>
 
 <table class="doc-table" style="margin-top:8px;">
  <tr>
-  <td colspan="4" class="bold">II. PHẦN MỀM</td>
+  <td colspan="4" class="bold"><span data-en="II. SOFTWARE">II. PHẦN MỀM</span></td>
  </tr>
  <tr class="bold center">
-  <td width="5%">STT</td>
-  <td width="50%">Tên Phần mềm</td>
-  <td width="15%">Loại</td>
-  <td width="30%">Ghi Chú</td>
+  <td width="5%"><span data-en="No.">STT</span></td>
+  <td width="50%"><span data-en="Software Name">Tên Phần mềm</span></td>
+  <td width="15%"><span data-en="Type">Loại</span></td>
+  <td width="30%"><span data-en="Notes">Ghi Chú</span></td>
  </tr>
  <tr>
   <td class="center">01</td>
   <td>Microsoft Windows 11 Enterprise 64bit</td>
-  <td class="center">Bản quyền</td>
-  <td>Đã được cài đặt và kích hoạt bản quyền</td>
+  <td class="center"><span data-en="Licensed">Bản quyền</span></td>
+  <td><span data-en="Installed and license activated">Đã được cài đặt và kích hoạt bản quyền</span></td>
  </tr>
  <tr>
   <td class="center">02</td>
   <td>Microsoft Office 365 Pro Plus</td>
-  <td class="center">Bản quyền</td>
-  <td>Đã được cài đặt và kích hoạt bản quyền</td>
+  <td class="center"><span data-en="Licensed">Bản quyền</span></td>
+  <td><span data-en="Installed and license activated">Đã được cài đặt và kích hoạt bản quyền</span></td>
  </tr>
  <tr>
   <td class="center">03</td>
-  <td>Các phần mềm miễn phí hỗ trợ công việc.</td>
-  <td class="center">Miễn phí</td>
-  <td>Đã được cài đặt</td>
+  <td><span data-en="Free software supporting work tasks.">Các phần mềm miễn phí hỗ trợ công việc.</span></td>
+  <td class="center"><span data-en="Free">Miễn phí</span></td>
+  <td><span data-en="Installed">Đã được cài đặt</span></td>
  </tr>
 </table>
 
-<p style="margin-top:6pt;" class="justify">Bên B xác nhận đã nhận đầy đủ tài sản theo danh sách ở trên với tình trạng hoạt động tốt, đồng thời cam kết thực hiện đầy đủ và đúng các điều khoản sau:</p>
+<p style="margin-top:6pt;" class="justify"><span data-en="Party B confirms having received in full the assets listed above in good working condition, and commits to fully and properly comply with the following terms:">Bên B xác nhận đã nhận đầy đủ tài sản theo danh sách ở trên với tình trạng hoạt động tốt, đồng thời cam kết thực hiện đầy đủ và đúng các điều khoản sau:</span></p>
 
-<p class="section-title">I. <u>Cam kết:</u></p>
+<p class="section-title"><span data-en="I. ">I. </span><u><span data-en="Commitments:">Cam kết:</span></u></p>
 <ul class="plain">
-  <li>Tài sản chỉ sử dụng cho mục đích phục vụ công việc.</li>
-  <li>Có trách nhiệm bảo quản, giữ gìn tài sản cẩn thận.</li>
-  <li>Phải sử dụng theo đúng hướng dẫn kỹ thuật và chính sách của Công ty.</li>
-  <li>Tuyệt đối không can thiệp vào phần cứng và phần mềm của tài sản.</li>
-  <li>Không được tự ý đem tài sản của Công Ty ra sửa tại các cửa hàng hoặc các trung tâm sửa máy vi tính bên ngoài với bất kỳ lý do nào.</li>
+  <li><span data-en="The assets shall be used solely for work purposes.">Tài sản chỉ sử dụng cho mục đích phục vụ công việc.</span></li>
+  <li><span data-en="Party B is responsible for carefully preserving and maintaining the assets.">Có trách nhiệm bảo quản, giữ gìn tài sản cẩn thận.</span></li>
+  <li><span data-en="The assets must be used in accordance with technical instructions and Company policies.">Phải sử dụng theo đúng hướng dẫn kỹ thuật và chính sách của Công ty.</span></li>
+  <li><span data-en="Absolutely no tampering with the hardware or software of the assets.">Tuyệt đối không can thiệp vào phần cứng và phần mềm của tài sản.</span></li>
+  <li><span data-en="Party B must not, on their own initiative, take Company assets for repair at outside shops or computer repair centers for any reason whatsoever.">Không được tự ý đem tài sản của Công Ty ra sửa tại các cửa hàng hoặc các trung tâm sửa máy vi tính bên ngoài với bất kỳ lý do nào.</span></li>
 </ul>
 
 <div class="page-break"></div>
 
-<p class="section-title">II. Đền bù:</p>
-<p class="justify"><b><i>Lưu ý:</i></b></p>
+<p class="section-title"><span data-en="II. Compensation:">II. Đền bù:</span></p>
+<p class="justify"><b><i><span data-en="Note:">Lưu ý:</span></i></b></p>
 <ul class="plain">
-  <li><b><i>Các điều khoản đền bù thuộc chính sách đền bù tài sản của Công ty do phòng Hành Chính Nhân Sự ban hành.</i></b></li>
-  <li><b><i>Mọi thắc mắc vui lòng liên hệ phòng Hành Chính Nhân Sự để được giải đáp.</i></b></li>
-  <li>Trong thời gian sử dụng, nếu xảy ra hư hỏng do lỗi của Bên B: Bên B phải chịu toàn bộ chi phí sửa chữa, thay thế (thông qua Trung tâm bảo hành chính hãng hoặc trung tâm được ủy quyền chính thức từ hãng và được kiểm tra bởi bộ phận IT).</li>
-  <li>Trong trường thời gian sử dụng, trường hợp làm mất và bất cứ lý do gì (trừ thiên tai, địch họa, hỏa hoạn): Bên B phải đền bù theo giá trị còn lại của các tài sản bị mất tại thời điểm mất (do Phòng Tài Chính Kế Toán của Công Ty thẩm định giá trị khấu hao tài sản) nhưng không thấp hơn 20% nguyên giá (trước thuế).</li>
-  <li>Các phụ kiện đi kèm (Balo, Chuột, Adapter sạc, …): Chỉ cấp lần đầu tiên, trong thời gian sử dụng. khi xảy ra hư hỏng do lỗi của bên B hoặc mất mát (bất kỳ lý do gì) phải tự trang bị lại (thiết bị phải chính hãng cùng loại và được kiểm tra bởi bộ phận IT).</li>
+  <li><b><i><span data-en="Compensation terms are governed by the Company's asset compensation policy issued by the Human Resources &amp; Administration Department.">Các điều khoản đền bù thuộc chính sách đền bù tài sản của Công ty do phòng Hành Chính Nhân Sự ban hành.</span></i></b></li>
+  <li><b><i><span data-en="For any questions, please contact the Human Resources &amp; Administration Department for clarification.">Mọi thắc mắc vui lòng liên hệ phòng Hành Chính Nhân Sự để được giải đáp.</span></i></b></li>
+  <li><span data-en="During the period of use, if damage occurs due to Party B's fault: Party B shall bear all repair and replacement costs (through an authorized manufacturer warranty center or an officially authorized service center, and verified by the IT Department).">Trong thời gian sử dụng, nếu xảy ra hư hỏng do lỗi của Bên B: Bên B phải chịu toàn bộ chi phí sửa chữa, thay thế (thông qua Trung tâm bảo hành chính hãng hoặc trung tâm được ủy quyền chính thức từ hãng và được kiểm tra bởi bộ phận IT).</span></li>
+  <li><span data-en="During the period of use, in case of loss for any reason (except natural disasters, acts of war, or fire): Party B shall compensate based on the remaining value of the lost assets at the time of loss (as appraised for depreciation by the Company's Finance &amp; Accounting Department), but not less than 20% of the original price (before tax).">Trong trường thời gian sử dụng, trường hợp làm mất và bất cứ lý do gì (trừ thiên tai, địch họa, hỏa hoạn): Bên B phải đền bù theo giá trị còn lại của các tài sản bị mất tại thời điểm mất (do Phòng Tài Chính Kế Toán của Công Ty thẩm định giá trị khấu hao tài sản) nhưng không thấp hơn 20% nguyên giá (trước thuế).</span></li>
+  <li><span data-en="Accompanying accessories (backpack, mouse, power adapter, etc.): Provided only once at initial issuance. During the period of use, if damage occurs due to Party B's fault or loss (for any reason), Party B must replace them at their own expense (the replacement must be genuine, of the same type, and verified by the IT Department).">Các phụ kiện đi kèm (Balo, Chuột, Adapter sạc, …): Chỉ cấp lần đầu tiên, trong thời gian sử dụng. khi xảy ra hư hỏng do lỗi của bên B hoặc mất mát (bất kỳ lý do gì) phải tự trang bị lại (thiết bị phải chính hãng cùng loại và được kiểm tra bởi bộ phận IT).</span></li>
 </ul>
 
-<p class="section-title">III. Loại trừ đền bù cho các sự cố hỏng hóc tài sản sau:</p>
+<p class="section-title"><span data-en="III. Exclusions from compensation for the following asset failures:">III. Loại trừ đền bù cho các sự cố hỏng hóc tài sản sau:</span></p>
 <ul class="plain">
-  <li>Các hư hỏng do tự nhiên trong quá trình sử dụng, Bên B sẽ không phải đền bù:</li>
+  <li><span data-en="For damage arising naturally during use, Party B shall not be liable for compensation:">Các hư hỏng do tự nhiên trong quá trình sử dụng, Bên B sẽ không phải đền bù:</span></li>
 </ul>
 <ul class="plain sub" style="margin-left:24px;">
-  <li>Hư, chai Pin Laptop.</li>
-  <li>Hư Adapter Sạc Laptop (Phải bàn giao lại Adaptor hư khi nhận Adapter mới)</li>
-  <li>Hư, Lỗi bàn phím Laptop không do chất lỏng đổ vào.</li>
-  <li>Hư chuột không dây (Đảm bảo chuột không dây hư phải còn Receiver)</li>
-  <li>Hư các linh kiện, thiết bị của Desktop không do chất lỏng đổ vào.</li>
-  <li>Hư các thiết bị dùng chung không phải do người dùng tác động, can thiệp vào phần cứng, đổ chất lỏng.</li>
+  <li><span data-en="Faulty or degraded laptop battery.">Hư, chai Pin Laptop.</span></li>
+  <li><span data-en="Faulty laptop power adapter (the faulty adapter must be returned when receiving a new one).">Hư Adapter Sạc Laptop (Phải bàn giao lại Adaptor hư khi nhận Adapter mới)</span></li>
+  <li><span data-en="Faulty laptop keyboard not caused by liquid spillage.">Hư, Lỗi bàn phím Laptop không do chất lỏng đổ vào.</span></li>
+  <li><span data-en="Faulty wireless mouse (the receiver must still be retained).">Hư chuột không dây (Đảm bảo chuột không dây hư phải còn Receiver)</span></li>
+  <li><span data-en="Faulty desktop components or devices not caused by liquid spillage.">Hư các linh kiện, thiết bị của Desktop không do chất lỏng đổ vào.</span></li>
+  <li><span data-en="Faulty shared devices not caused by user interference with the hardware or by liquid spillage.">Hư các thiết bị dùng chung không phải do người dùng tác động, can thiệp vào phần cứng, đổ chất lỏng.</span></li>
 </ul>
 
-<p class="section-title">IV. Hoàn Trả/Thu hồi tài sản:</p>
+<p class="section-title"><span data-en="IV. Return / Recovery of assets:">IV. Hoàn Trả/Thu hồi tài sản:</span></p>
 <ul class="plain">
-  <li>Bên B phải hoàn trả đầy đủ các tài sản đã được bàn giao theo Danh sách tài sản đã nhận ở trên với điều kiện phải đảm bảo hoàn thành xong các điều khoản đền bù (nếu có) cho Phòng HCNS và Phòng Kế Toán trước khi nghỉ việc.</li>
-  <li>Ban Tổng Giám Đốc có thể kiểm tra hoặc thu hồi các tài sản đã bàn giao ở trên bất cứ lúc nào nếu thấy cần thiết theo yêu cầu công việc.</li>
+  <li><span data-en="Party B must return in full all assets handed over under the asset list above, provided that all compensation obligations (if any) have been completed with the HR &amp; Administration Department and the Accounting Department prior to resignation.">Bên B phải hoàn trả đầy đủ các tài sản đã được bàn giao theo Danh sách tài sản đã nhận ở trên với điều kiện phải đảm bảo hoàn thành xong các điều khoản đền bù (nếu có) cho Phòng HCNS và Phòng Kế Toán trước khi nghỉ việc.</span></li>
+  <li><span data-en="The Board of Management may inspect or recover the assets handed over above at any time if deemed necessary for work requirements.">Ban Tổng Giám Đốc có thể kiểm tra hoặc thu hồi các tài sản đã bàn giao ở trên bất cứ lúc nào nếu thấy cần thiết theo yêu cầu công việc.</span></li>
 </ul>
 
-<p class="justify">Biên bản được lập thành 02 (hai) bản, bên giao và bên nhận mỗi bên giữ 01 (một) bản, có giá trị ngang nhau.</p>
+<p class="justify"><span data-en="This document is made in 02 (two) copies; the delivering party and the receiving party each keep 01 (one) copy, with equal legal validity.">Biên bản được lập thành 02 (hai) bản, bên giao và bên nhận mỗi bên giữ 01 (một) bản, có giá trị ngang nhau.</span></p>
 
 <table class="plain-table center" id="sigTable" width="100%" style="margin-top:20px;">
  <tr class="bold">
-  <td width="33%">NGƯỜI NHẬN</td>
-  <td width="34%" class="col-quanly">QUẢN LÝ TRỰC TIẾP</td>
-  <td width="33%">NGƯỜI GIAO</td>
+  <td width="33%"><span data-en="RECIPIENT">NGƯỜI NHẬN</span></td>
+  <td width="34%" class="col-quanly"><span data-en="DIRECT MANAGER">QUẢN LÝ TRỰC TIẾP</span></td>
+  <td width="33%"><span data-en="DELIVERER">NGƯỜI GIAO</span></td>
  </tr>
  <tr>
   <td style="height:80px;">&nbsp;</td>
