@@ -30,6 +30,12 @@
 	display:none; margin-top:14px; padding:10px 12px; border-radius:6px;
 	background:#fdecec; border:1px solid #e5848a; color:#a02128; font-size:13px;
  }
+ .lock-contact {
+	margin-top:18px; padding-top:14px; border-top:1px solid #e3e3e3;
+	font-size:13px; color:#666; line-height:1.6;
+ }
+ .lock-contact a { color:#2f7dee; text-decoration:none; font-weight:bold; }
+ .lock-contact a:hover { text-decoration:underline; }
  @media print { #lockScreen { display:none !important; } }
  p.MsoNormal, li.MsoNormal, div.MsoNormal { margin:0; font-size:12pt; }
  .app-layout {
