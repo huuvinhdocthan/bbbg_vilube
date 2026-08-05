@@ -278,14 +278,58 @@
   /* ============================================================
    *  CÁC TRƯỜNG CHUNG
    * ============================================================ */
+
+  // Dựng 3 ô chọn Ngày / Tháng / Năm, mặc định theo giá trị ban đầu
+  function initDatePicker(defaultY, defaultM, defaultD) {
+	var selDay = document.getElementById('selNgayDay');
+	var selMonth = document.getElementById('selNgayMonth');
+	var selYear = document.getElementById('selNgayYear');
+
+	for (var d = 1; d <= 31; d++) {
+	  var optD = document.createElement('option');
+	  optD.value = pad(d);
+	  optD.textContent = pad(d);
+	  selDay.appendChild(optD);
+	}
+	for (var m = 1; m <= 12; m++) {
+	  var optM = document.createElement('option');
+	  optM.value = pad(m);
+	  optM.textContent = pad(m);
+	  selMonth.appendChild(optM);
+	}
+	var thisYear = new Date().getFullYear();
+	var startYear = Math.min(thisYear, parseInt(defaultY, 10)) - 5;
+	var endYear = Math.max(thisYear, parseInt(defaultY, 10)) + 5;
+	for (var y = startYear; y <= endYear; y++) {
+	  var optY = document.createElement('option');
+	  optY.value = String(y);
+	  optY.textContent = String(y);
+	  selYear.appendChild(optY);
+	}
+
+	selDay.value = defaultD;
+	selMonth.value = defaultM;
+	selYear.value = defaultY;
+
+	selDay.addEventListener('change', updateNgay);
+	selMonth.addEventListener('change', updateNgay);
+	selYear.addEventListener('change', updateNgay);
+  }
+
+  function getNgayParts() {
+	return {
+	  d: document.getElementById('selNgayDay').value,
+	  m: document.getElementById('selNgayMonth').value,
+	  y: document.getElementById('selNgayYear').value
+	};
+  }
+
   function updateNgay() {
-	var val = document.getElementById('inpNgay').value; // yyyy-mm-dd
-	if (!val) return;
-	var parts = val.split('-');
-	var y = parts[0], m = parts[1], d = parts[2];
+	var parts = getNgayParts();
+	if (!parts.d || !parts.m || !parts.y) return;
 	document.getElementById('ngayCauVan').textContent = currentLang === 'en'
-	  ? MONTHS_EN[parseInt(m, 10) - 1] + ' ' + d + ', ' + y
-	  : 'ngày ' + d + ' tháng ' + m + ' năm ' + y;
+	  ? MONTHS_EN[parseInt(parts.m, 10) - 1] + ' ' + parts.d + ', ' + parts.y
+	  : 'ngày ' + parts.d + ' tháng ' + parts.m + ' năm ' + parts.y;
   }
 
   function updateNguoiGiao() {
@@ -323,7 +367,10 @@
 	});
   }
 
-  document.getElementById('inpNgay').addEventListener('input', updateNgay);
+  (function () {
+	var today = new Date();
+	initDatePicker(String(today.getFullYear()), pad(today.getMonth() + 1), pad(today.getDate()));
+  })();
   document.getElementById('inpNguoiGiao').addEventListener('input', updateNguoiGiao);
   document.getElementById('inpNguoiNhan').addEventListener('input', updateNguoiNhan);
   document.getElementById('inpQuanLy').addEventListener('input', updateQuanLy);
@@ -386,12 +433,8 @@
 	var nguoiNhanVal = document.getElementById('inpNguoiNhan').value;
 	var nguoiNhan = abbreviateName(nguoiNhanVal) || 'NGUOINHAN';
 
-	var ngayVal = document.getElementById('inpNgay').value; // yyyy-mm-dd
-	var ngayStr = '';
-	if (ngayVal) {
-	  var parts = ngayVal.split('-');
-	  ngayStr = parts[2] + parts[1] + parts[0];
-	}
+	var ngay = getNgayParts();
+	var ngayStr = (ngay.d && ngay.m && ngay.y) ? (ngay.d + ngay.m + ngay.y) : '';
 
 	return [ma, nguoiNhan, ngayStr].filter(Boolean).join('_');
   }
@@ -428,8 +471,8 @@
 	  '<style>@page{size:21cm 29.7cm;margin:1.4cm 1.6cm;} ' +
 	  'body{font-family:"Times New Roman",serif;font-size:12pt;line-height:1.2;text-align:justify;} ' +
 	  'p{margin-bottom:4pt;} table{border-collapse:collapse;} ' +
-	  'table.doc-table td{border:1px solid #000;padding:4px 6px;font-size:10.5pt;vertical-align:middle;} ' +
-	  'table.plain-table td{padding:2px 6px;vertical-align:middle;} .center{text-align:center;} ' +
+	  'table.doc-table td{border:1px solid #000;padding:4px 6px;font-size:10.5pt;vertical-align:middle;text-align:left;} ' +
+	  'table.plain-table td{padding:2px 6px;vertical-align:middle;text-align:left;} .center{text-align:center;} ' +
 	  '.justify{text-align:justify;} .bold{font-weight:bold;} .title{font-size:20pt;font-weight:bold;text-align:center;margin:0;} ' +
 	  '.section-title{font-weight:bold;} ul.plain{margin:0;padding-left:36px;} ' +
 	  'ul.plain li{margin-bottom:2pt;} ' +
