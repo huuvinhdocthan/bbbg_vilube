@@ -136,22 +136,48 @@
 	  grid2.appendChild(baoHanhInp);
 	  item.appendChild(grid2);
 
-	  // Ô "Thu hồi thiết bị cũ" — nếu dòng chưa có mục thu hồi thì gõ vào panel sẽ tự tạo trong bảng
+	  // Tick "Có / Không có thu hồi thiết bị cũ" — bật thì tạo mục trong Ghi Chú, tắt thì xóa mục đó
+	  var thuHoiCheckLabel = document.createElement('label');
+	  thuHoiCheckLabel.className = 'checkbox-row';
+	  var thuHoiCheck = document.createElement('input');
+	  thuHoiCheck.type = 'checkbox';
+	  thuHoiCheck.checked = !!thuHoiEl;
+	  thuHoiCheckLabel.appendChild(thuHoiCheck);
+	  thuHoiCheckLabel.appendChild(document.createTextNode(' Có thu hồi thiết bị cũ'));
+	  item.appendChild(thuHoiCheckLabel);
+
 	  var thuHoiInp = document.createElement('input');
 	  thuHoiInp.type = 'text';
-	  thuHoiInp.placeholder = 'Thu hồi thiết bị cũ (nếu có)';
+	  thuHoiInp.placeholder = 'Tên thiết bị cũ (S/T: ...)';
 	  thuHoiInp.value = thuHoiEl ? thuHoiEl.textContent.trim() : '';
+	  thuHoiInp.disabled = !thuHoiEl;
+	  item.appendChild(thuHoiInp);
+
 	  thuHoiInp.addEventListener('input', function () {
-		if (!thuHoiEl && ghiChuUl) {
-		  var li = document.createElement('li');
-		  li.innerHTML = 'Thu hồi <span class="editable-field" data-role="thuhoi" contenteditable="true"></span>';
-		  ghiChuUl.appendChild(li);
-		  thuHoiEl = li.querySelector('[data-role="thuhoi"]');
-		  thuHoiEl.addEventListener('input', function () { thuHoiInp.value = thuHoiEl.textContent; });
-		}
 		if (thuHoiEl) thuHoiEl.textContent = thuHoiInp.value;
 	  });
-	  item.appendChild(thuHoiInp);
+
+	  thuHoiCheck.addEventListener('change', function () {
+		if (thuHoiCheck.checked) {
+		  if (!thuHoiEl && ghiChuUl) {
+			var li = document.createElement('li');
+			li.innerHTML = 'Thu hồi <span class="editable-field" data-role="thuhoi" contenteditable="true"></span>';
+			ghiChuUl.appendChild(li);
+			thuHoiEl = li.querySelector('[data-role="thuhoi"]');
+			thuHoiEl.addEventListener('input', function () { thuHoiInp.value = thuHoiEl.textContent; });
+		  }
+		  thuHoiInp.disabled = false;
+		  thuHoiInp.focus();
+		} else {
+		  if (thuHoiEl) {
+			var oldLi = thuHoiEl.closest('li');
+			if (oldLi) oldLi.remove();
+			thuHoiEl = null;
+		  }
+		  thuHoiInp.value = '';
+		  thuHoiInp.disabled = true;
+		}
+	  });
 
 	  list.appendChild(item);
 
@@ -219,6 +245,15 @@
   document.getElementById('inpBoPhan').addEventListener('input', updateBoPhan);
   document.getElementById('inpPhongBan').addEventListener('input', updatePhongBan);
 
+  // Bật/tắt cột "Quản lý trực tiếp" trong bảng chữ ký — xóa nếu không cần
+  var chkQuanLy = document.getElementById('chkQuanLy');
+  var inpQuanLyEl = document.getElementById('inpQuanLy');
+  var sigTable = document.getElementById('sigTable');
+  chkQuanLy.addEventListener('change', function () {
+	sigTable.classList.toggle('hide-quanly', !chkQuanLy.checked);
+	inpQuanLyEl.disabled = !chkQuanLy.checked;
+  });
+
   // Dán (paste) vào ô sửa nhanh trong bảng chỉ lấy văn bản thuần, không dính định dạng
   document.addEventListener('paste', function (e) {
 	var t = e.target;
@@ -229,9 +264,56 @@
 	}
   });
 
-  // Print / PDF export
+  // Bỏ dấu tiếng Việt (giữ khoảng trắng giữa các từ)
+  function stripAccents(str) {
+	str = (str || '').normalize('NFD').replace(/[̀-ͯ]/g, '');
+	str = str.replace(/đ/g, 'd').replace(/Đ/g, 'D');
+	return str;
+  }
+
+  // Bỏ dấu, viết liền không khoảng trắng, chỉ giữ chữ/số — dùng cho mã tài sản, ngày...
+  function removeDiacritics(str) {
+	return stripAccents(str).replace(/[^a-zA-Z0-9]+/g, '');
+  }
+
+  // Rút gọn tên người: lấy chữ cái đầu của các từ (trừ từ cuối) + viết đầy đủ từ cuối (tên gọi)
+  // Nguyen van A -> NVA | Nguyen ba linh -> NBLINH
+  function abbreviateName(fullName) {
+	var clean = stripAccents(fullName).replace(/[^a-zA-Z\s]+/g, '').trim();
+	var words = clean.split(/\s+/).filter(Boolean);
+	if (words.length === 0) return '';
+	if (words.length === 1) return words[0].toUpperCase();
+	var lastWord = words[words.length - 1];
+	var initials = words.slice(0, -1).map(function (w) { return w.charAt(0); }).join('');
+	return (initials + lastWord).toUpperCase();
+  }
+
+  // Ghép tên file: {Mã tài sản (S/N) dòng 1}_{Tên người nhận rút gọn}_{ngày tháng năm}
+  // Ví dụ: DMLB6F4_NGUYENVANA_05082026 -> Nguyen van A -> NVA, Nguyen ba linh -> NBLINH
+  function buildFileBaseName() {
+	var firstRow = document.querySelector('#hwBody tr');
+	var maEl = firstRow ? firstRow.querySelector('[data-role="ma"]') : null;
+	var ma = removeDiacritics(maEl ? maEl.textContent.trim() : '') || 'ThietBi';
+
+	var nguoiNhanVal = document.getElementById('inpNguoiNhan').value;
+	var nguoiNhan = abbreviateName(nguoiNhanVal) || 'NGUOINHAN';
+
+	var ngayVal = document.getElementById('inpNgay').value; // yyyy-mm-dd
+	var ngayStr = '';
+	if (ngayVal) {
+	  var parts = ngayVal.split('-');
+	  ngayStr = parts[2] + parts[1] + parts[0];
+	}
+
+	return [ma, nguoiNhan, ngayStr].filter(Boolean).join('_');
+  }
+
+  // Print / PDF export — đặt tạm tiêu đề trang để trình duyệt gợi ý đúng tên file khi "Save as PDF"
   document.getElementById('exportPdfBtn').addEventListener('click', function () {
+	var originalTitle = document.title;
+	document.title = buildFileBaseName();
 	window.print();
+	setTimeout(function () { document.title = originalTitle; }, 1000);
   });
 
   // Dựng nội dung HTML dùng chung cho cả xuất .docx và .doc
@@ -245,6 +327,10 @@
 	clone.querySelectorAll('td[style*="height:80px"]').forEach(function (el) {
 	  el.style.height = '45px';
 	});
+	// Nếu đã bỏ chọn "Có Quản lý trực tiếp" thì loại hẳn cột đó khỏi file xuất
+	if (document.getElementById('sigTable').classList.contains('hide-quanly')) {
+	  clone.querySelectorAll('.col-quanly').forEach(function (el) { el.remove(); });
+	}
 	var content = clone.outerHTML;
 	return '<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" ' +
 	  'xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">' +
@@ -252,10 +338,10 @@
 	  '<!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View>' +
 	  '<w:DoNotOptimizeForBrowser/></w:WordDocument></xml><![endif]-->' +
 	  '<style>@page{size:21cm 29.7cm;margin:1.4cm 1.6cm;} ' +
-	  'body{font-family:"Times New Roman",serif;font-size:12pt;line-height:1.2;} ' +
+	  'body{font-family:"Times New Roman",serif;font-size:12pt;line-height:1.2;text-align:justify;} ' +
 	  'p{margin-bottom:4pt;} table{border-collapse:collapse;} ' +
-	  'table.doc-table td{border:1px solid #000;padding:4px 6px;font-size:10.5pt;} ' +
-	  'table.plain-table td{padding:2px 6px;} .center{text-align:center;} ' +
+	  'table.doc-table td{border:1px solid #000;padding:4px 6px;font-size:10.5pt;vertical-align:middle;} ' +
+	  'table.plain-table td{padding:2px 6px;vertical-align:middle;} .center{text-align:center;} ' +
 	  '.justify{text-align:justify;} .bold{font-weight:bold;} .title{font-size:20pt;font-weight:bold;text-align:center;margin:0;} ' +
 	  '.section-title{font-weight:bold;} ul.plain{margin:0;padding-left:18px;} ' +
 	  'ul.plain li{margin-bottom:2pt;} ' +
@@ -279,13 +365,13 @@
 	  return;
 	}
 	var blob = htmlDocx.asBlob(html);
-	downloadBlob(blob, 'Bien-ban-ban-giao-tai-san.docx');
+	downloadBlob(blob, buildFileBaseName() + '.docx');
   });
 
   // Xuất .doc kiểu cũ (HTML nhúng, không cần mạng, Word vẫn mở được)
   document.getElementById('exportDocBtn').addEventListener('click', function () {
 	var html = buildExportHtml();
 	var blob = new Blob(['﻿', html], { type: 'application/msword' });
-	downloadBlob(blob, 'Bien-ban-ban-giao-tai-san.doc');
+	downloadBlob(blob, buildFileBaseName() + '.doc');
   });
 })();

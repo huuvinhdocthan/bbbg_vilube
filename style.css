@@ -18,13 +18,14 @@
 	padding:20px 60px 48px;
 	box-shadow:0 0 8px rgba(0,0,0,.2);
 	line-height:1.5;
+	text-align:justify;
  }
  .WordSection1 p, .WordSection1 li, .WordSection1 td, .WordSection1 div {
 	line-height:1.5;
  }
  table.doc-table { border-collapse:collapse; width:100%; }
- table.doc-table td { border:1px solid #000; padding:4px 6px; vertical-align:top; font-size:10.5pt; }
- table.plain-table td { padding:2px 6px; vertical-align:top; }
+ table.doc-table td { border:1px solid #000; padding:4px 6px; vertical-align:middle; font-size:10.5pt; }
+ table.plain-table td { padding:2px 6px; vertical-align:middle; }
  .center { text-align:center; }
  .justify { text-align:justify; }
  .bold { font-weight:bold; }
@@ -37,6 +38,9 @@
  .row-ghichu-list { padding-left:18px !important; }
  .page-break { page-break-before: always; }
  .editable-field { border-bottom:1px dashed #1a73e8; background:#eef4ff; padding:0 2px; }
+ .editable-field[data-role="ten"] {
+	display:block; width:100%; box-sizing:border-box; margin:0 0 4px; padding:2px 4px;
+ }
  .row-del-btn {
 	background:#e5484d; color:#fff; border:none; border-radius:4px;
 	font-size:10px; line-height:1; padding:2px 5px; cursor:pointer; margin-top:4px; display:block;
@@ -75,6 +79,10 @@
  #editPanel input {
 	padding:6px 8px; border-radius:5px; border:1px solid #555; font-size:13px; width:100%; box-sizing:border-box; min-width:0;
  }
+ .checkbox-row { flex-direction:row !important; align-items:center; gap:6px !important; }
+ .checkbox-row input[type="checkbox"] { width:auto !important; }
+ #sigTable.hide-quanly .col-quanly { display:none; }
+ #sigTable.hide-quanly td:not(.col-quanly) { width:50% !important; }
  .panel-section-title { font-size:12px; font-weight:bold; color:#9fb0d0; margin-bottom:2px; }
  .asset-panel-item {
 	background:#2a3040; border-radius:6px; padding:8px; margin-bottom:8px;

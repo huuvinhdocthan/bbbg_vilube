@@ -33,12 +33,16 @@
 	</div>
 	<div class="asset-panel-grid">
 	  <label style="flex:1;">Người nhận (Bên B)
-		<input type="text" id="inpNguoiNhan" value="NGUYỄN BÁ LINH">
+		<input type="text" id="inpNguoiNhan" value="NGUYỄN VĂN A">
 	  </label>
 	  <label style="flex:1;">Phòng ban
 		<input type="text" id="inpPhongBan" value="B2C SALES">
 	  </label>
 	</div>
+	<label class="checkbox-row">
+	  <input type="checkbox" id="chkQuanLy" checked style="width:auto;">
+	  Có Quản lý trực tiếp
+	</label>
 	<label>Quản lý trực tiếp
 	  <input type="text" id="inpQuanLy" value="HỒ HỮU THƯƠNG">
 	</label>
@@ -55,7 +59,7 @@
 <p class="title">BIÊN BẢN BÀN GIAO TÀI SẢN</p>
 <p class="title" style="font-size:20pt;">(Thiết bị CNTT)</p>
 
-<p class="justify" style="margin-top:12px;">Hôm nay, <span id="ngayCauVan">ngày 09 tháng 07 năm 2025</span>, chúng tôi gồm có: </p>
+<p class="justify" style="margin-top:12px;">Hôm nay, <span id="ngayCauVan">ngày 05 tháng 08 năm 2026</span>, chúng tôi gồm có: </p>
 
 <table class="plain-table" width="100%">
  <tr>
@@ -65,7 +69,7 @@
  </tr>
  <tr>
   <td>BÊN B - NGƯỜI NHẬN:</td>
-  <td class="bold"><span class="nguoiNhan">NGUYỄN BÁ LINH</span></td>
+  <td class="bold"><span class="nguoiNhan">NGUYỄN VĂN A</span></td>
   <td>PHÒNG BAN: <b><span class="phongBan">B2C SALES</span></b></td>
  </tr>
 </table>
@@ -211,20 +215,20 @@
 
 <p class="justify">Biên bản được lập thành 02 (hai) bản, bên giao và bên nhận mỗi bên giữ 01 (một) bản, có giá trị ngang nhau.</p>
 
-<table class="plain-table center" width="100%" style="margin-top:20px;">
+<table class="plain-table center" id="sigTable" width="100%" style="margin-top:20px;">
  <tr class="bold">
   <td width="33%">NGƯỜI NHẬN</td>
-  <td width="34%">QUẢN LÝ TRỰC TIẾP</td>
+  <td width="34%" class="col-quanly">QUẢN LÝ TRỰC TIẾP</td>
   <td width="33%">NGƯỜI GIAO</td>
  </tr>
  <tr>
   <td style="height:80px;">&nbsp;</td>
-  <td style="height:80px;">&nbsp;</td>
+  <td style="height:80px;" class="col-quanly">&nbsp;</td>
   <td style="height:80px;">&nbsp;</td>
  </tr>
  <tr class="bold">
-  <td><span class="nguoiNhan">NGUYỄN BÁ LINH</span></td>
-  <td><span class="quanLy">HỒ HỮU THƯƠNG</span></td>
+  <td><span class="nguoiNhan">NGUYỄN VĂN A</span></td>
+  <td class="col-quanly"><span class="quanLy">HỒ HỮU THƯƠNG</span></td>
   <td><span class="nguoiGiao">ĐOÀN HỮU VINH</span></td>
  </tr>
 </table>
