@@ -8,6 +8,8 @@ window.initBBBG = function () {
   var DICT = {
 	assetItem:      { vi: 'Tài sản #',              en: 'Asset #' },
 	phTen:          { vi: 'Tên tài sản',            en: 'Asset name' },
+	phKemTheo:      { vi: 'VD: 01 Adapter sạc Dell', en: 'e.g. 01 Dell power adapter' },
+	chkKemTheo:     { vi: ' Có phụ kiện kèm theo',  en: ' Has included accessories' },
 	phSl:           { vi: 'SL',                     en: 'Qty' },
 	phMa:           { vi: 'Mã tài sản',             en: 'Asset code' },
 	phGia:          { vi: 'Giá trị tài sản',        en: 'Asset value' },
@@ -95,10 +97,12 @@ window.initBBBG = function () {
 	tr.innerHTML =
 	  '<td class="center"><span class="row-stt">' + stt + '</span>' +
 	  '<button class="row-del-btn" type="button" title="' + t('titleDel') + '">✕</button></td>' +
-	  '<td><span class="editable-field" data-role="ten" contenteditable="true">' + t('newTen') + '</span></td>' +
+	  '<td><span class="editable-field" data-role="ten" contenteditable="true">' + t('newTen') + '</span>' +
+	  '<ul class="plain row-specs-list"><li><span data-en="Included: ">Kèm theo: </span>' +
+	  '<span class="editable-field" data-role="kemtheo" contenteditable="true">--</span></li></ul></td>' +
 	  '<td class="center"><span class="editable-field" data-role="sl" contenteditable="true">01</span></td>' +
 	  '<td class="center"><span class="editable-field" data-role="ma" contenteditable="true">' + t('newMa') + '</span></td>' +
-	  '<td class="center"><span class="editable-field" data-role="gia" contenteditable="true">0 VNĐ</span></td>' +
+	  '<td class="center"><span class="editable-field" data-role="gia" contenteditable="true">-</span></td>' +
 	  '<td><ul class="plain row-ghichu-list">' +
 	  '<li><span data-en="Condition: ">Tình trạng: </span><span class="editable-field" data-role="tinhtrang" contenteditable="true">' + t('newTinhTrang') + '</span></li>' +
 	  '<li><span data-en="Purchase date: ">Ngày mua: </span><span class="editable-field" data-role="ngaymua" contenteditable="true">--/--/----</span></li>' +
@@ -159,6 +163,7 @@ window.initBBBG = function () {
 	  var ngayMuaEl = tr.querySelector('[data-role="ngaymua"]');
 	  var baoHanhEl = tr.querySelector('[data-role="baohanh"]');
 	  var thuHoiEl = tr.querySelector('[data-role="thuhoi"]');
+	  var kemTheoEl = tr.querySelector('[data-role="kemtheo"]');
 	  var ghiChuUl = tr.querySelector('.row-ghichu-list');
 	  if (!tenEl) return;
 
@@ -183,6 +188,61 @@ window.initBBBG = function () {
 
 	  var tenInp = makeInput(tenEl, t('phTen'));
 	  item.appendChild(tenInp);
+
+	  // Tick "Có phụ kiện kèm theo" — bật thì thêm dòng "Kèm theo: ..." vào ô Tên tài sản, tắt thì xóa
+	  var kemTheoCheckLabel = document.createElement('label');
+	  kemTheoCheckLabel.className = 'checkbox-row';
+	  var kemTheoCheck = document.createElement('input');
+	  kemTheoCheck.type = 'checkbox';
+	  kemTheoCheck.checked = !!kemTheoEl;
+	  kemTheoCheckLabel.appendChild(kemTheoCheck);
+	  kemTheoCheckLabel.appendChild(document.createTextNode(t('chkKemTheo')));
+	  item.appendChild(kemTheoCheckLabel);
+
+	  var kemTheoInp = document.createElement('input');
+	  kemTheoInp.type = 'text';
+	  kemTheoInp.placeholder = t('phKemTheo');
+	  kemTheoInp.value = kemTheoEl ? kemTheoEl.textContent.trim() : '';
+	  kemTheoInp.disabled = !kemTheoEl;
+	  item.appendChild(kemTheoInp);
+
+	  kemTheoInp.addEventListener('input', function () {
+		if (kemTheoEl) kemTheoEl.textContent = kemTheoInp.value;
+	  });
+
+	  kemTheoCheck.addEventListener('change', function () {
+		if (kemTheoCheck.checked) {
+		  if (!kemTheoEl) {
+			var ul = tr.querySelector('.row-specs-list');
+			if (!ul) {
+			  ul = document.createElement('ul');
+			  ul.className = 'plain row-specs-list';
+			  tenEl.parentNode.appendChild(ul);
+			}
+			var li = document.createElement('li');
+			li.innerHTML = '<span data-en="Included: ">Kèm theo: </span>' +
+			  '<span class="editable-field" data-role="kemtheo" contenteditable="true"></span>';
+			ul.appendChild(li);
+			var lbl = li.querySelector('[data-en]');
+			if (lbl) {
+			  lbl.setAttribute('data-vi', lbl.textContent);
+			  if (currentLang === 'en') lbl.textContent = lbl.getAttribute('data-en');
+			}
+			kemTheoEl = li.querySelector('[data-role="kemtheo"]');
+			kemTheoEl.addEventListener('input', function () { kemTheoInp.value = kemTheoEl.textContent; });
+		  }
+		  kemTheoInp.disabled = false;
+		  kemTheoInp.focus();
+		} else {
+		  if (kemTheoEl) {
+			var oldLi = kemTheoEl.closest('li');
+			if (oldLi) oldLi.remove();
+			kemTheoEl = null;
+		  }
+		  kemTheoInp.value = '';
+		  kemTheoInp.disabled = true;
+		}
+	  });
 
 	  var grid = document.createElement('div');
 	  grid.className = 'asset-panel-grid';
@@ -265,6 +325,7 @@ window.initBBBG = function () {
 
 	  // Đồng bộ ngược: gõ/dán trực tiếp trong bảng cũng khớp value vào ô panel tương ứng
 	  if (tenEl) tenEl.addEventListener('input', function () { tenInp.value = tenEl.textContent; });
+	  if (kemTheoEl) kemTheoEl.addEventListener('input', function () { kemTheoInp.value = kemTheoEl.textContent; });
 	  if (slEl) slEl.addEventListener('input', function () { slInp.value = slEl.textContent; });
 	  if (maEl) maEl.addEventListener('input', function () { maInp.value = maEl.textContent; });
 	  if (giaEl) giaEl.addEventListener('input', function () { giaInp.value = giaEl.textContent; });
@@ -477,9 +538,86 @@ window.initBBBG = function () {
 	});
   }
 
+  // Gộp thêm style nội tuyến cho 1 thẻ (giữ nguyên style sẵn có)
+  function addStyle(el, css) {
+	var cur = el.getAttribute('style') || '';
+	if (cur && cur.charAt(cur.length - 1) !== ';') cur += ';';
+	el.setAttribute('style', cur + css);
+  }
+
+  var TNR = "font-family:'Times New Roman',serif;";
+
+  /* Word (.doc/.docx) KHÔNG đọc CSS trong thẻ <style> và KHÔNG hiểu pseudo-element (:before).
+   * Vì vậy phải ép mọi định dạng thành style nội tuyến và đổi bullet giả thành ký tự thật. */
+  function prepareForWord(root) {
+	// 1) Bullet giả (:before) -> ký tự thật
+	root.querySelectorAll('ul.plain > li').forEach(function (li) {
+	  var isSub = li.parentNode.classList.contains('sub');
+	  li.insertBefore(document.createTextNode(isSub ? 'o  ' : '-  '), li.firstChild);
+	  addStyle(li, 'list-style:none;margin:0 0 4pt;text-align:justify;');
+	});
+	root.querySelectorAll('ul.plain').forEach(function (ul) {
+	  addStyle(ul, 'list-style:none;margin:0;padding-left:22px;');
+	});
+	// Danh sách nằm TRONG bảng: nén sát lại, bỏ khoảng cách thừa cho đỡ tốn trang
+	root.querySelectorAll('table.doc-table ul.plain').forEach(function (ul) {
+	  addStyle(ul, 'padding-left:10px;margin:0;');
+	});
+	root.querySelectorAll('table.doc-table ul.plain > li').forEach(function (li) {
+	  addStyle(li, 'margin:0;line-height:1.15;text-align:left;');
+	});
+
+	// 2) Định dạng theo lớp -> style nội tuyến
+	root.querySelectorAll('.title').forEach(function (el) {
+	  addStyle(el, 'font-size:20pt;font-weight:bold;text-align:center;margin:0;line-height:1.5;');
+	});
+	root.querySelectorAll('.section-title').forEach(function (el) {
+	  addStyle(el, 'font-weight:bold;font-size:12pt;margin:6pt 0 3pt;');
+	});
+	root.querySelectorAll('.center').forEach(function (el) { addStyle(el, 'text-align:center;'); });
+	root.querySelectorAll('.justify').forEach(function (el) { addStyle(el, 'text-align:justify;'); });
+	root.querySelectorAll('.bold').forEach(function (el) { addStyle(el, 'font-weight:bold;'); });
+
+	// 3) Bảng
+	root.querySelectorAll('table').forEach(function (tb) {
+	  addStyle(tb, 'border-collapse:collapse;width:100%;');
+	});
+	root.querySelectorAll('table.doc-table td').forEach(function (td) {
+	  addStyle(td, 'border:1px solid #000000;padding:2px 5px;font-size:10.5pt;' +
+		'vertical-align:middle;text-align:left;line-height:1.15;');
+	});
+	root.querySelectorAll('table.doc-table [data-role="ten"]').forEach(function (el) {
+	  addStyle(el, 'display:block;margin:0;padding:0;');
+	});
+	root.querySelectorAll('table.plain-table td').forEach(function (td) {
+	  addStyle(td, 'padding:2px 6px;vertical-align:middle;');
+	});
+	root.querySelectorAll('table.plain-table.center td').forEach(function (td) {
+	  addStyle(td, 'text-align:center;');
+	});
+
+	// 4) Ép font Times New Roman cho toàn bộ thẻ
+	addStyle(root, TNR + 'font-size:12pt;line-height:1.3;text-align:justify;');
+	root.querySelectorAll('*').forEach(function (el) {
+	  if (el.tagName === 'IMG' || el.tagName === 'BR') return;
+	  var cur = el.getAttribute('style') || '';
+	  el.setAttribute('style', TNR + (cur && cur.charAt(cur.length - 1) !== ';' ? cur + ';' : cur));
+	});
+  }
+
   // Dựng nội dung HTML dùng chung cho cả xuất .docx và .doc (bất đồng bộ vì cần nhúng ảnh base64)
   function buildExportHtml() {
 	var clone = document.querySelector('.WordSection1').cloneNode(true);
+
+	// Giá trị tài sản: nếu bỏ trống hoặc bằng 0 thì hiển thị dấu "-" thay vì "0 VNĐ"
+	clone.querySelectorAll('[data-role="gia"]').forEach(function (el) {
+	  var txt = el.textContent.replace(/ /g, ' ').trim();
+	  var digits = txt.replace(/[^0-9]/g, '');
+	  if (txt === '' || digits === '' || parseInt(digits, 10) === 0) {
+		el.textContent = '-';
+	  }
+	});
+
 	clone.querySelectorAll('.editable-field').forEach(function (el) {
 	  el.removeAttribute('contenteditable');
 	  el.removeAttribute('class');
@@ -496,6 +634,9 @@ window.initBBBG = function () {
 	// Bỏ hẳn dấu ngắt trang cố định — để nội dung chạy tự nhiên, không chừa trang trống
 	clone.querySelectorAll('.page-break').forEach(function (el) { el.remove(); });
 
+	// Ép định dạng trực tiếp vào từng thẻ (Word/docx không đọc CSS trong <style> và không hiểu :before)
+	prepareForWord(clone);
+
 	var imgTasks = Array.prototype.map.call(clone.querySelectorAll('img'), imgToDataUrl);
 
 	return Promise.all(imgTasks).then(function () {
@@ -509,21 +650,10 @@ window.initBBBG = function () {
 		'*{font-family:"Times New Roman",serif;mso-ascii-font-family:"Times New Roman";' +
 		'mso-hansi-font-family:"Times New Roman";mso-bidi-font-family:"Times New Roman";' +
 		'mso-fareast-font-family:"Times New Roman";} ' +
-		'body{font-family:"Times New Roman",serif;font-size:12pt;line-height:1.2;text-align:justify;} ' +
-		'p, span, td, li, div, b, i, u {font-family:"Times New Roman",serif;} ' +
+		'body{font-family:"Times New Roman",serif;font-size:12pt;line-height:1.3;text-align:justify;} ' +
 		'p{margin:0 0 4pt;} table{border-collapse:collapse;width:100%;} ' +
-		'table.doc-table td{border:1px solid #000;padding:4px 6px;font-size:10.5pt;vertical-align:middle;text-align:left;} ' +
-		'table.plain-table td{padding:2px 6px;vertical-align:middle;} .center{text-align:center;} ' +
-		'.justify{text-align:justify;} .bold{font-weight:bold;} ' +
-		'.title{font-size:20pt;font-weight:bold;text-align:center;margin:0;line-height:1.5;} ' +
-		'.section-title{font-weight:bold;font-size:12pt;page-break-after:avoid;mso-pagination:keep-with-next;} ' +
-		'ul.plain{margin:0;padding-left:36px;} ' +
-		'ul.plain li{list-style:none;position:relative;margin-bottom:6px;text-align:justify;} ' +
-		'ul.plain li:before{content:"-";position:absolute;left:-14px;} ' +
-		'ul.sub li:before{content:"o";font-family:"Courier New";} ' +
-		'table.doc-table ul.plain li{text-align:left;margin-bottom:2pt;} ' +
-		'.row-ghichu-list{padding-left:18px !important;} ' +
-		'tr{page-break-inside:avoid;mso-yfti-cnfc:0;}</style></head><body>' + content + '</body></html>';
+		'ul{list-style:none;margin:0;padding-left:22px;} ' +
+		'tr{page-break-inside:avoid;}</style></head><body>' + content + '</body></html>';
 	});
   }
 

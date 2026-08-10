@@ -73,7 +73,12 @@
  ul.plain li:before { content:"-"; position:absolute; left:-14px; }
  ul.sub li:before { content:"o"; font-family:"Courier New"; }
  .row-ghichu-list { padding-left:18px !important; }
- table.doc-table ul.plain li { text-align:left; }
+ /* Nội dung trong ô bảng Phần cứng / Phần mềm: nén sát lại để đỡ tốn trang khi in */
+ table.doc-table td { line-height:1.25; }
+ table.doc-table ul.plain { margin:0 !important; padding-left:14px !important; }
+ table.doc-table ul.plain li { text-align:left; margin-bottom:0 !important; line-height:1.25; }
+ table.doc-table ul.plain li:before { left:-11px; }
+ table.doc-table .editable-field[data-role="ten"] { margin-bottom:1px; }
  /* Không ngắt trang cố định — nội dung chạy tự nhiên, chỉ tránh cắt đôi bảng/danh sách */
  .page-break { display:none; }
  @media print {
@@ -81,6 +86,10 @@
 	ul.plain { page-break-inside:avoid; break-inside:avoid; }
 	ul.plain li { page-break-inside:avoid; break-inside:avoid; }
 	.section-title { page-break-after:avoid; break-after:avoid; page-break-inside:avoid; }
+	/* Nén bảng Phần cứng / Phần mềm khi in cho gọn trang */
+	table.doc-table td { padding:2px 5px !important; line-height:1.15 !important; }
+	table.doc-table ul.plain li { margin-bottom:0 !important; line-height:1.15 !important; }
+	.editable-field[data-role="ten"] { margin-bottom:0 !important; padding:0 !important; }
  }
  .editable-field { border-bottom:1px dashed #1a73e8; background:#eef4ff; padding:0 2px; text-align:left; }
  .editable-field[data-role="ten"] {
