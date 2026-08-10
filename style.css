@@ -74,7 +74,14 @@
  ul.sub li:before { content:"o"; font-family:"Courier New"; }
  .row-ghichu-list { padding-left:18px !important; }
  table.doc-table ul.plain li { text-align:left; }
- .page-break { page-break-before: always; }
+ /* Không ngắt trang cố định — nội dung chạy tự nhiên, chỉ tránh cắt đôi bảng/danh sách */
+ .page-break { display:none; }
+ @media print {
+	table { page-break-inside:avoid; break-inside:avoid; }
+	ul.plain { page-break-inside:avoid; break-inside:avoid; }
+	ul.plain li { page-break-inside:avoid; break-inside:avoid; }
+	.section-title { page-break-after:avoid; break-after:avoid; page-break-inside:avoid; }
+ }
  .editable-field { border-bottom:1px dashed #1a73e8; background:#eef4ff; padding:0 2px; text-align:left; }
  .editable-field[data-role="ten"] {
 	display:block; width:100%; box-sizing:border-box; margin:0 0 4px; padding:2px 4px; text-align:left;

@@ -493,6 +493,9 @@ window.initBBBG = function () {
 	  clone.querySelectorAll('.col-quanly').forEach(function (el) { el.remove(); });
 	}
 
+	// Bỏ hẳn dấu ngắt trang cố định — để nội dung chạy tự nhiên, không chừa trang trống
+	clone.querySelectorAll('.page-break').forEach(function (el) { el.remove(); });
+
 	var imgTasks = Array.prototype.map.call(clone.querySelectorAll('img'), imgToDataUrl);
 
 	return Promise.all(imgTasks).then(function () {
@@ -513,14 +516,14 @@ window.initBBBG = function () {
 		'table.plain-table td{padding:2px 6px;vertical-align:middle;} .center{text-align:center;} ' +
 		'.justify{text-align:justify;} .bold{font-weight:bold;} ' +
 		'.title{font-size:20pt;font-weight:bold;text-align:center;margin:0;line-height:1.5;} ' +
-		'.section-title{font-weight:bold;font-size:12pt;} ' +
+		'.section-title{font-weight:bold;font-size:12pt;page-break-after:avoid;mso-pagination:keep-with-next;} ' +
 		'ul.plain{margin:0;padding-left:36px;} ' +
 		'ul.plain li{list-style:none;position:relative;margin-bottom:6px;text-align:justify;} ' +
 		'ul.plain li:before{content:"-";position:absolute;left:-14px;} ' +
 		'ul.sub li:before{content:"o";font-family:"Courier New";} ' +
 		'table.doc-table ul.plain li{text-align:left;margin-bottom:2pt;} ' +
 		'.row-ghichu-list{padding-left:18px !important;} ' +
-		'.page-break{page-break-before:always;mso-page-break-before:always;}</style></head><body>' + content + '</body></html>';
+		'tr{page-break-inside:avoid;mso-yfti-cnfc:0;}</style></head><body>' + content + '</body></html>';
 	});
   }
 
