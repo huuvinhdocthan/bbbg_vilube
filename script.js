@@ -8,9 +8,14 @@ window.initBBBG = function () {
   var DICT = {
 	assetItem:      { vi: 'Tài sản #',              en: 'Asset #' },
 	phTen:          { vi: 'Tên tài sản',            en: 'Asset name' },
-	pickDevice:     { vi: '📦 Chọn từ danh mục thiết bị...', en: '📦 Pick from device catalog...' },
+	searchDevice:   { vi: '🔍 Gõ tên hoặc mã thiết bị...', en: '🔍 Type device name or code...' },
+	applyToRow:     { vi: '↳ Áp dụng vào dòng ',    en: '↳ Apply to row ' },
+	applyToNew:     { vi: '➕ Thêm thành dòng mới',  en: '➕ Add as new row' },
+	noDevice:       { vi: 'Không tìm thấy thiết bị nào.', en: 'No matching device found.' },
 	phKemTheo:      { vi: 'VD: 01 Adapter sạc Dell', en: 'e.g. 01 Dell power adapter' },
 	chkKemTheo:     { vi: ' Có phụ kiện kèm theo',  en: ' Has included accessories' },
+	chkKhac:        { vi: ' Có dòng thông tin khác', en: ' Has other info line' },
+	phKhac:         { vi: 'Nội dung tự nhập...',    en: 'Type your own info...' },
 	phSl:           { vi: 'SL',                     en: 'Qty' },
 	phMa:           { vi: 'Mã tài sản',             en: 'Asset code' },
 	phGia:          { vi: 'Giá trị tài sản',        en: 'Asset value' },
@@ -91,7 +96,7 @@ window.initBBBG = function () {
   }
 
   // Thêm dòng thiết bị mới vào bảng Phần cứng (đầy đủ data-role + data-en để tự dịch và tự vào panel)
-  document.getElementById('addHwRowBtn').addEventListener('click', function () {
+  function addHwRow() {
 	var tbody = document.getElementById('hwBody');
 	var stt = pad(tbody.querySelectorAll('tr').length + 1);
 	var tr = document.createElement('tr');
@@ -115,6 +120,11 @@ window.initBBBG = function () {
 	  '</ul>' +
 	  '<button class="row-thuhoi-btn" type="button">' + t('btnThuHoi') + '</button></td>';
 	tbody.appendChild(tr);
+	return tr;
+  }
+
+  document.getElementById('addHwRowBtn').addEventListener('click', function () {
+	var tr = addHwRow();
 	applyLanguage();
 	var firstField = tr.querySelector('.editable-field');
 	if (firstField) firstField.focus();
@@ -160,6 +170,48 @@ window.initBBBG = function () {
 	return Array.isArray(window.BBBG_DEVICES) ? window.BBBG_DEVICES : [];
   }
 
+  // Các dòng thông số nằm dưới Tên tài sản, theo đúng thứ tự hiển thị
+  var SPEC_DEFS = [
+	{ role: 'cpu',     vi: 'CPU: ',      en: 'CPU: ',       chiMay: true },
+	{ role: 'ram',     vi: 'RAM: ',      en: 'RAM: ',       chiMay: true },
+	{ role: 'storage', vi: 'Storage: ',  en: 'Storage: ',   chiMay: true },
+	{ role: 'kemtheo', vi: 'Kèm theo: ', en: 'Included: ',  chiMay: false },
+	{ role: 'khac',    vi: 'Khác: ',     en: 'Other: ',     chiMay: false }
+  ];
+
+  function escHtml(s) {
+	return String(s == null ? '' : s)
+	  .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  // Dựng lại khối thông số theo loại thiết bị:
+  //   loai = "may"  -> có CPU / RAM / Ổ cứng
+  //   loai = "khac" -> bỏ hẳn 3 dòng đó (màn hình, chuột, phím...)
+  function rebuildSpecs(tr, dev) {
+	var tenEl = tr.querySelector('[data-role="ten"]');
+	if (!tenEl) return;
+	var ul = tr.querySelector('.row-specs-list');
+	var laMay = window.BBBG_getType ? window.BBBG_getType(dev.loai).specs : true;
+
+	var rows = SPEC_DEFS.filter(function (d) {
+	  if (d.chiMay && !laMay) return false;
+	  return !!(dev[d.role] && String(dev[d.role]).trim());
+	});
+
+	if (!rows.length) { if (ul) ul.remove(); return; }
+
+	if (!ul) {
+	  ul = document.createElement('ul');
+	  ul.className = 'plain row-specs-list';
+	  tenEl.parentNode.appendChild(ul);
+	}
+	ul.innerHTML = rows.map(function (d) {
+	  return '<li><span data-en="' + escHtml(d.en) + '">' + escHtml(d.vi) + '</span>' +
+		'<span class="editable-field" data-role="' + d.role + '" contenteditable="true">' +
+		escHtml(dev[d.role]) + '</span></li>';
+	}).join('');
+  }
+
   // Điền thông tin 1 thiết bị trong danh mục vào 1 dòng của bảng
   function applyDeviceToRow(tr, dev) {
 	function setField(role, value) {
@@ -168,42 +220,118 @@ window.initBBBG = function () {
 	}
 	setField('ten', dev.ten);
 	setField('ma', dev.ma);
-	setField('cpu', dev.cpu);
-	setField('ram', dev.ram);
-	setField('storage', dev.storage);
-	setField('kemtheo', dev.kemtheo);
 	setField('gia', dev.gia);
 	setField('ngaymua', dev.ngaymua);
 	setField('baohanh', dev.baohanh);
-	renderAssetPanel();
+	rebuildSpecs(tr, dev);
+	applyLanguage(); // dịch nhãn mới + dựng lại panel
   }
 
-  // Ô chọn thiết bị từ danh mục, đặt ở đầu mỗi khối tài sản trong panel
-  function makeCatalogPicker(tr) {
+  /* ---- Ô TÌM KIẾM THIẾT BỊ (khối riêng, đặt đầu mục Tài sản phần cứng) ---- */
+  var catalogQuery = '';   // giữ lại từ khóa khi panel được dựng lại
+  var catalogTarget = '0'; // dòng sẽ được áp dụng ('new' = thêm dòng mới)
+
+  function normText(s) {
+	return stripAccents(String(s || '')).toLowerCase();
+  }
+
+  function buildCatalogSearchBox() {
+	var list = document.getElementById('assetPanelList');
+	if (!list) return;
+
+	var old = document.getElementById('catalogSearchBox');
+	if (old) old.remove();
+
 	var cat = getCatalog();
-	if (!cat.length) return null;
+	if (!cat.length) return;
 
-	var sel = document.createElement('select');
-	sel.className = 'catalog-picker';
+	var box = document.createElement('div');
+	box.id = 'catalogSearchBox';
+	box.className = 'catalog-box';
 
-	var opt0 = document.createElement('option');
-	opt0.value = '';
-	opt0.textContent = t('pickDevice');
-	sel.appendChild(opt0);
-
-	cat.forEach(function (d, i) {
+	// Chọn dòng sẽ được áp dụng
+	var rows = document.querySelectorAll('#hwBody tr');
+	var target = document.createElement('select');
+	target.className = 'catalog-target';
+	Array.prototype.forEach.call(rows, function (tr, i) {
 	  var o = document.createElement('option');
 	  o.value = String(i);
-	  // Hiện kèm Mã tài sản để phân biệt các máy cùng model
-	  o.textContent = d.ma ? (d.ten + '  [' + d.ma + ']') : d.ten;
-	  sel.appendChild(o);
+	  o.textContent = t('applyToRow') + pad(i + 1);
+	  target.appendChild(o);
 	});
+	var oNew = document.createElement('option');
+	oNew.value = 'new';
+	oNew.textContent = t('applyToNew');
+	target.appendChild(oNew);
+	if (catalogTarget === 'new' || parseInt(catalogTarget, 10) < rows.length) {
+	  target.value = catalogTarget;
+	} else {
+	  target.value = '0';
+	  catalogTarget = '0';
+	}
+	target.addEventListener('change', function () { catalogTarget = target.value; });
+	box.appendChild(target);
 
-	sel.addEventListener('change', function () {
-	  if (sel.value === '') return;
-	  applyDeviceToRow(tr, cat[parseInt(sel.value, 10)]);
+	// Ô nhập từ khóa
+	var inp = document.createElement('input');
+	inp.type = 'text';
+	inp.className = 'catalog-search';
+	inp.placeholder = t('searchDevice');
+	inp.value = catalogQuery;
+	box.appendChild(inp);
+
+	// Vùng kết quả
+	var res = document.createElement('div');
+	res.className = 'catalog-results';
+	box.appendChild(res);
+
+	function renderResults() {
+	  var q = normText(catalogQuery).trim();
+	  res.innerHTML = '';
+
+	  var matches = cat.map(function (d, i) { return { d: d, i: i }; });
+	  if (q) {
+		matches = matches.filter(function (m) {
+		  return normText(m.d.ten).indexOf(q) >= 0 || normText(m.d.ma).indexOf(q) >= 0;
+		});
+	  }
+
+	  if (!matches.length) {
+		var none = document.createElement('div');
+		none.className = 'catalog-none';
+		none.textContent = t('noDevice');
+		res.appendChild(none);
+		return;
+	  }
+
+	  matches.slice(0, 30).forEach(function (m) {
+		var it = document.createElement('div');
+		it.className = 'catalog-result';
+		var tp = window.BBBG_getType ? window.BBBG_getType(m.d.loai) : { icon: '💻' };
+		it.innerHTML =
+		  '<span class="cat-name">' + tp.icon + ' ' + escHtml(m.d.ten) + '</span>' +
+		  (m.d.ma ? '<span class="cat-ma">' + escHtml(m.d.ma) + '</span>' : '');
+		it.addEventListener('click', function () {
+		  var tr;
+		  if (catalogTarget === 'new') {
+			tr = addHwRow();
+			catalogTarget = String(document.querySelectorAll('#hwBody tr').length - 1);
+		  } else {
+			tr = document.querySelectorAll('#hwBody tr')[parseInt(catalogTarget, 10)];
+		  }
+		  if (tr) applyDeviceToRow(tr, m.d);
+		});
+		res.appendChild(it);
+	  });
+	}
+
+	inp.addEventListener('input', function () {
+	  catalogQuery = inp.value;
+	  renderResults();
 	});
-	return sel;
+	renderResults();
+
+	list.parentNode.insertBefore(box, list);
   }
 
   // Dựng panel chỉnh sửa nhanh cho TẤT CẢ dòng tài sản hiện có (kể cả dòng vừa thêm)
@@ -212,6 +340,7 @@ window.initBBBG = function () {
 	var list = document.getElementById('assetPanelList');
 	if (!tbody || !list) return;
 	list.innerHTML = '';
+	buildCatalogSearchBox();
 	Array.prototype.forEach.call(tbody.querySelectorAll('tr'), function (tr, idx) {
 	  var tenEl = tr.querySelector('[data-role="ten"]');
 	  var slEl = tr.querySelector('[data-role="sl"]');
@@ -221,7 +350,6 @@ window.initBBBG = function () {
 	  var ngayMuaEl = tr.querySelector('[data-role="ngaymua"]');
 	  var baoHanhEl = tr.querySelector('[data-role="baohanh"]');
 	  var thuHoiEl = tr.querySelector('[data-role="thuhoi"]');
-	  var kemTheoEl = tr.querySelector('[data-role="kemtheo"]');
 	  var ghiChuUl = tr.querySelector('.row-ghichu-list');
 	  if (!tenEl) return;
 
@@ -232,9 +360,6 @@ window.initBBBG = function () {
 	  title.className = 'asset-panel-title';
 	  title.textContent = t('assetItem') + pad(idx + 1);
 	  item.appendChild(title);
-
-	  var picker = makeCatalogPicker(tr);
-	  if (picker) item.appendChild(picker);
 
 	  function makeInput(el, placeholder) {
 		var inp = document.createElement('input');
@@ -250,60 +375,70 @@ window.initBBBG = function () {
 	  var tenInp = makeInput(tenEl, t('phTen'));
 	  item.appendChild(tenInp);
 
-	  // Tick "Có phụ kiện kèm theo" — bật thì thêm dòng "Kèm theo: ..." vào ô Tên tài sản, tắt thì xóa
-	  var kemTheoCheckLabel = document.createElement('label');
-	  kemTheoCheckLabel.className = 'checkbox-row';
-	  var kemTheoCheck = document.createElement('input');
-	  kemTheoCheck.type = 'checkbox';
-	  kemTheoCheck.checked = !!kemTheoEl;
-	  kemTheoCheckLabel.appendChild(kemTheoCheck);
-	  kemTheoCheckLabel.appendChild(document.createTextNode(t('chkKemTheo')));
-	  item.appendChild(kemTheoCheckLabel);
+	  /* Tạo cặp [tick bật/tắt] + [ô nhập] cho 1 dòng phụ trong ô Tên tài sản.
+	   * Tick vào -> thêm dòng "<nhãn>: ..." vào bảng. Bỏ tick -> xóa dòng đó. */
+	  function makeSpecToggle(role, labelVi, labelEn, chkText, phText) {
+		var el = tr.querySelector('[data-role="' + role + '"]');
 
-	  var kemTheoInp = document.createElement('input');
-	  kemTheoInp.type = 'text';
-	  kemTheoInp.placeholder = t('phKemTheo');
-	  kemTheoInp.value = kemTheoEl ? kemTheoEl.textContent.trim() : '';
-	  kemTheoInp.disabled = !kemTheoEl;
-	  item.appendChild(kemTheoInp);
+		var chkLabel = document.createElement('label');
+		chkLabel.className = 'checkbox-row';
+		var chk = document.createElement('input');
+		chk.type = 'checkbox';
+		chk.checked = !!el;
+		chkLabel.appendChild(chk);
+		chkLabel.appendChild(document.createTextNode(chkText));
+		item.appendChild(chkLabel);
 
-	  kemTheoInp.addEventListener('input', function () {
-		if (kemTheoEl) kemTheoEl.textContent = kemTheoInp.value;
-	  });
+		var inp = document.createElement('input');
+		inp.type = 'text';
+		inp.placeholder = phText;
+		inp.value = el ? el.textContent.trim() : '';
+		inp.disabled = !el;
+		item.appendChild(inp);
 
-	  kemTheoCheck.addEventListener('change', function () {
-		if (kemTheoCheck.checked) {
-		  if (!kemTheoEl) {
-			var ul = tr.querySelector('.row-specs-list');
-			if (!ul) {
-			  ul = document.createElement('ul');
-			  ul.className = 'plain row-specs-list';
-			  tenEl.parentNode.appendChild(ul);
+		inp.addEventListener('input', function () {
+		  if (el) el.textContent = inp.value;
+		});
+
+		chk.addEventListener('change', function () {
+		  if (chk.checked) {
+			if (!el) {
+			  var ul = tr.querySelector('.row-specs-list');
+			  if (!ul) {
+				ul = document.createElement('ul');
+				ul.className = 'plain row-specs-list';
+				tenEl.parentNode.appendChild(ul);
+			  }
+			  var li = document.createElement('li');
+			  li.innerHTML = '<span data-en="' + escHtml(labelEn) + '">' + escHtml(labelVi) + '</span>' +
+				'<span class="editable-field" data-role="' + role + '" contenteditable="true"></span>';
+			  ul.appendChild(li);
+			  var lbl = li.querySelector('[data-en]');
+			  if (lbl) {
+				lbl.setAttribute('data-vi', lbl.textContent);
+				if (currentLang === 'en') lbl.textContent = lbl.getAttribute('data-en');
+			  }
+			  el = li.querySelector('[data-role="' + role + '"]');
+			  el.addEventListener('input', function () { inp.value = el.textContent; });
 			}
-			var li = document.createElement('li');
-			li.innerHTML = '<span data-en="Included: ">Kèm theo: </span>' +
-			  '<span class="editable-field" data-role="kemtheo" contenteditable="true"></span>';
-			ul.appendChild(li);
-			var lbl = li.querySelector('[data-en]');
-			if (lbl) {
-			  lbl.setAttribute('data-vi', lbl.textContent);
-			  if (currentLang === 'en') lbl.textContent = lbl.getAttribute('data-en');
+			inp.disabled = false;
+			inp.focus();
+		  } else {
+			if (el) {
+			  var oldLi = el.closest('li');
+			  if (oldLi) oldLi.remove();
+			  el = null;
 			}
-			kemTheoEl = li.querySelector('[data-role="kemtheo"]');
-			kemTheoEl.addEventListener('input', function () { kemTheoInp.value = kemTheoEl.textContent; });
+			inp.value = '';
+			inp.disabled = true;
 		  }
-		  kemTheoInp.disabled = false;
-		  kemTheoInp.focus();
-		} else {
-		  if (kemTheoEl) {
-			var oldLi = kemTheoEl.closest('li');
-			if (oldLi) oldLi.remove();
-			kemTheoEl = null;
-		  }
-		  kemTheoInp.value = '';
-		  kemTheoInp.disabled = true;
-		}
-	  });
+		});
+
+		if (el) el.addEventListener('input', function () { inp.value = el.textContent; });
+	  }
+
+	  makeSpecToggle('kemtheo', 'Kèm theo: ', 'Included: ', t('chkKemTheo'), t('phKemTheo'));
+	  makeSpecToggle('khac', 'Khác: ', 'Other: ', t('chkKhac'), t('phKhac'));
 
 	  var grid = document.createElement('div');
 	  grid.className = 'asset-panel-grid';
@@ -386,7 +521,6 @@ window.initBBBG = function () {
 
 	  // Đồng bộ ngược: gõ/dán trực tiếp trong bảng cũng khớp value vào ô panel tương ứng
 	  if (tenEl) tenEl.addEventListener('input', function () { tenInp.value = tenEl.textContent; });
-	  if (kemTheoEl) kemTheoEl.addEventListener('input', function () { kemTheoInp.value = kemTheoEl.textContent; });
 	  if (slEl) slEl.addEventListener('input', function () { slInp.value = slEl.textContent; });
 	  if (maEl) maEl.addEventListener('input', function () { maInp.value = maEl.textContent; });
 	  if (giaEl) giaEl.addEventListener('input', function () { giaInp.value = giaEl.textContent; });

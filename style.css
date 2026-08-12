@@ -4,12 +4,13 @@
  /* ---- Màn hình khóa (nhập mật khẩu) ---- */
  #lockScreen {
 	position:fixed; inset:0; z-index:9999;
-	background:linear-gradient(135deg,#1f2430 0%,#2a3040 100%);
+	background:linear-gradient(135deg,#eaf1fb 0%,#dbe6f5 100%);
 	display:flex; align-items:center; justify-content:center; padding:20px;
  }
  .lock-box {
-	background:#fff; border-radius:12px; padding:36px 34px; width:100%; max-width:400px;
-	box-shadow:0 8px 40px rgba(0,0,0,.35); text-align:center; box-sizing:border-box;
+	background:#fff; border:1px solid #d5dde8; border-radius:12px;
+	padding:36px 34px; width:100%; max-width:400px;
+	box-shadow:0 6px 28px rgba(31,52,85,.14); text-align:center; box-sizing:border-box;
  }
  .lock-icon { font-size:42px; line-height:1; margin-bottom:10px; }
  .lock-box h1 { font-size:20px; margin:0 0 6px; color:#1f2430; }
@@ -106,22 +107,24 @@
  }
  .row-thuhoi-btn:hover { background:#eef4ff; }
 
- /* ---- Toolbar (sidebar bên trái) ---- */
+ /* ---- Toolbar (sidebar bên trái) — giao diện SÁNG ---- */
  #editToolbar {
 	position:sticky; top:20px; z-index:100;
-	width:340px; flex-shrink:0;
-	background:#1f2430; color:#fff;
+	width:clamp(340px, 30vw, 520px); flex-shrink:0;
+	background:#ffffff; color:#25303f;
+	border:1px solid #d5dde8;
 	padding:14px 16px; border-radius:8px;
 	font-family:"Times New Roman", serif; font-size:13px;
 	max-height:calc(100vh - 40px);
 	overflow-y:auto;
+	box-shadow:0 2px 10px rgba(0,0,0,.08);
  }
  #editToolbar .toolbar-row { display:flex; flex-direction:column; gap:8px; }
  #editToolbar button {
 	background:#2f7dee; color:#fff; border:none; border-radius:6px;
 	padding:8px 14px; font-size:13px; cursor:pointer; width:100%;
  }
- #editToolbar button.secondary { background:#3a4050; }
+ #editToolbar button.secondary { background:#eef2f8; color:#3a4a5f; border:1px solid #cfd9e6; }
  #editToolbar button:hover { opacity:.88; }
  .export-word-row { display:flex; gap:8px; }
  .export-word-row button { flex:1 1 0; min-width:0; padding:8px 6px; }
@@ -129,47 +132,76 @@
  /* ---- Nút chuyển ngôn ngữ VI / EN ---- */
  .lang-switch {
 	display:flex; gap:0; margin-bottom:12px;
-	background:#11151d; border-radius:6px; padding:3px;
+	background:#eef2f8; border:1px solid #dbe3ee; border-radius:6px; padding:3px;
  }
  #editToolbar .lang-switch button {
-	flex:1 1 0; width:auto; background:transparent; color:#8fa0c0;
+	flex:1 1 0; width:auto; background:transparent; color:#6b7c93; border:none;
 	border-radius:4px; padding:6px 0; font-size:12px; font-weight:bold;
  }
  #editToolbar .lang-switch button.active { background:#2f7dee; color:#fff; }
- #editToolbar .lang-switch button:hover { opacity:1; color:#fff; }
+ #editToolbar .lang-switch button:hover { opacity:1; }
  #editPanel {
-	display:none; margin-top:12px; padding-top:12px;
-	border-top:1px solid #3a4050;
-	flex-direction:column; gap:12px;
+	display:none; margin-top:10px; padding-top:10px;
+	border-top:1px solid #e3e9f2;
+	flex-direction:column; gap:8px;
  }
  #editPanel.open { display:flex; }
- #editPanel label { display:flex; flex-direction:column; gap:4px; font-size:12px; color:#c9d1e0; min-width:0; }
+ #editPanel label { display:flex; flex-direction:column; gap:2px; font-size:11px; color:#5a6a80; min-width:0; }
  #editPanel input, #editPanel select {
-	padding:6px 8px; border-radius:5px; border:1px solid #555; font-size:13px; width:100%; box-sizing:border-box; min-width:0;
-	background:#1f2430; color:#fff; cursor:pointer;
+	padding:5px 8px; border-radius:5px; border:1px solid #c6d1e0; font-size:13px; width:100%; box-sizing:border-box; min-width:0;
+	background:#fff; color:#25303f; cursor:pointer;
  }
+ #editPanel input:focus, #editPanel select:focus { outline:none; border-color:#2f7dee; }
  #editPanel input[type="text"] { cursor:text; }
  .date-picker-grid { display:flex; gap:6px; }
  .date-picker-grid select {
-	flex:1 1 0; min-width:0; padding:6px 4px; border-radius:5px; border:1px solid #555;
-	background:#1f2430; color:#fff; font-size:13px; box-sizing:border-box; cursor:pointer;
+	flex:1 1 0; min-width:0; padding:6px 4px; border-radius:5px; border:1px solid #c6d1e0;
+	background:#fff; color:#25303f; font-size:13px; box-sizing:border-box; cursor:pointer;
  }
  .checkbox-row { flex-direction:row !important; align-items:center; gap:6px !important; }
  .checkbox-row input[type="checkbox"] { width:auto !important; }
  #sigTable.hide-quanly .col-quanly { display:none; }
  #sigTable.hide-quanly td:not(.col-quanly) { width:50% !important; }
- .panel-section-title { font-size:12px; font-weight:bold; color:#9fb0d0; margin-bottom:2px; }
+ .panel-section-title { font-size:12px; font-weight:bold; color:#3a4a5f; margin-bottom:2px; }
  .asset-panel-item {
-	background:#2a3040; border-radius:6px; padding:8px; margin-bottom:8px;
-	display:flex; flex-direction:column; gap:6px;
+	background:#f5f8fc; border:1px solid #e0e7f0; border-radius:6px;
+	padding:7px 8px; margin-bottom:7px;
+	display:flex; flex-direction:column; gap:4px;
  }
- .asset-panel-item .asset-panel-title { font-size:11px; color:#8fa0c0; font-weight:bold; }
- .catalog-picker {
-	width:100%; box-sizing:border-box; padding:6px 8px; border-radius:5px;
-	border:1px solid #2f7dee; background:#1a2740; color:#cfe0ff;
-	font-size:12px; cursor:pointer; font-family:"Times New Roman", serif;
+ .asset-panel-item .asset-panel-title { font-size:11px; color:#6b7c93; font-weight:bold; }
+
+ /* ---- Khối tìm kiếm thiết bị trong danh mục ---- */
+ .catalog-box {
+	background:#eff5ff; border:1px solid #b9d2f5; border-radius:7px;
+	padding:9px; margin-bottom:10px;
+	display:flex; flex-direction:row; flex-wrap:wrap; align-items:center; gap:7px;
  }
- .catalog-picker:hover { background:#213254; }
+ .catalog-box .catalog-target { flex:0 0 44%; }
+ .catalog-box .catalog-search  { flex:1 1 0; }
+ .catalog-box .catalog-results { flex:1 1 100%; }
+ .catalog-box .catalog-target,
+ .catalog-box .catalog-search {
+	box-sizing:border-box; padding:6px 8px; border-radius:5px; min-width:0;
+	border:1px solid #b9d2f5; background:#fff; color:#25303f;
+	font-size:12px; font-family:"Times New Roman", serif;
+ }
+ .catalog-box .catalog-target { cursor:pointer; }
+ .catalog-box .catalog-search::placeholder { color:#93a4bb; }
+ .catalog-box .catalog-search:focus, .catalog-box .catalog-target:focus { outline:none; border-color:#2f7dee; }
+ .catalog-results { max-height:190px; overflow-y:auto; display:flex; flex-direction:column; gap:3px; }
+ .catalog-result {
+	padding:5px 7px; border-radius:4px; cursor:pointer; font-size:12px;
+	background:#fff; border:1px solid #dbe6f5; color:#25303f;
+	display:flex; align-items:center; gap:6px;
+ }
+ .catalog-result:hover { background:#2f7dee; border-color:#2f7dee; color:#fff; }
+ .catalog-result .cat-name { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+ .catalog-result .cat-ma {
+	font-size:10px; background:#eaf1fc; color:#2c5ea8;
+	padding:1px 6px; border-radius:8px; white-space:nowrap;
+ }
+ .catalog-result:hover .cat-ma { background:#1b4a91; color:#fff; }
+ .catalog-none { font-size:12px; color:#8b9bb2; font-style:italic; padding:6px 4px; }
  .asset-panel-grid { display:flex; gap:6px; flex-wrap:nowrap; min-width:0; }
  .asset-panel-grid > label { flex:1 1 0; min-width:0; }
  .asset-panel-grid input { font-size:12px; padding:5px 7px; min-width:0; }
