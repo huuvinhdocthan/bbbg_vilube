@@ -2,6 +2,17 @@
 # nó chứa toàn bộ nội dung biên bản ở dạng CHƯA MÃ HÓA.
 tao-mat-khau.html
 
+# Trang quản trị + danh mục thiết bị bản THƯỜNG (chứa giá tiền, chưa mã hóa)
+# -> chỉ dùng nội bộ trên máy, KHÔNG đưa lên GitHub.
+admin.html
+data-thietbi.js
+
+# Tài liệu nội bộ + file mẫu (mô tả cấu trúc hệ thống, quy trình bảo mật)
+HUONG-DAN.md
+mau-danh-muc-thiet-bi.csv
+
+# Ghi chú: data-thietbi.enc.js (bản đã mã hóa) thì ĐƯỢC PHÉP đưa lên GitHub.
+
 # File tạm / hệ thống
 Thumbs.db
 desktop.ini

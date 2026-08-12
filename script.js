@@ -8,6 +8,7 @@ window.initBBBG = function () {
   var DICT = {
 	assetItem:      { vi: 'Tài sản #',              en: 'Asset #' },
 	phTen:          { vi: 'Tên tài sản',            en: 'Asset name' },
+	pickDevice:     { vi: '📦 Chọn từ danh mục thiết bị...', en: '📦 Pick from device catalog...' },
 	phKemTheo:      { vi: 'VD: 01 Adapter sạc Dell', en: 'e.g. 01 Dell power adapter' },
 	chkKemTheo:     { vi: ' Có phụ kiện kèm theo',  en: ' Has included accessories' },
 	phSl:           { vi: 'SL',                     en: 'Qty' },
@@ -98,7 +99,11 @@ window.initBBBG = function () {
 	  '<td class="center"><span class="row-stt">' + stt + '</span>' +
 	  '<button class="row-del-btn" type="button" title="' + t('titleDel') + '">✕</button></td>' +
 	  '<td><span class="editable-field" data-role="ten" contenteditable="true">' + t('newTen') + '</span>' +
-	  '<ul class="plain row-specs-list"><li><span data-en="Included: ">Kèm theo: </span>' +
+	  '<ul class="plain row-specs-list">' +
+	  '<li><span data-en="CPU: ">CPU: </span><span class="editable-field" data-role="cpu" contenteditable="true">--</span></li>' +
+	  '<li><span data-en="RAM: ">RAM: </span><span class="editable-field" data-role="ram" contenteditable="true">--</span></li>' +
+	  '<li><span data-en="Storage: ">Storage: </span><span class="editable-field" data-role="storage" contenteditable="true">--</span></li>' +
+	  '<li><span data-en="Included: ">Kèm theo: </span>' +
 	  '<span class="editable-field" data-role="kemtheo" contenteditable="true">--</span></li></ul></td>' +
 	  '<td class="center"><span class="editable-field" data-role="sl" contenteditable="true">01</span></td>' +
 	  '<td class="center"><span class="editable-field" data-role="ma" contenteditable="true">' + t('newMa') + '</span></td>' +
@@ -148,6 +153,59 @@ window.initBBBG = function () {
 	}
   });
 
+  /* ============================================================
+   *  DANH MỤC THIẾT BỊ (data-thietbi.js — quản lý bằng admin.html)
+   * ============================================================ */
+  function getCatalog() {
+	return Array.isArray(window.BBBG_DEVICES) ? window.BBBG_DEVICES : [];
+  }
+
+  // Điền thông tin 1 thiết bị trong danh mục vào 1 dòng của bảng
+  function applyDeviceToRow(tr, dev) {
+	function setField(role, value) {
+	  var el = tr.querySelector('[data-role="' + role + '"]');
+	  if (el && value) el.textContent = value;
+	}
+	setField('ten', dev.ten);
+	setField('ma', dev.ma);
+	setField('cpu', dev.cpu);
+	setField('ram', dev.ram);
+	setField('storage', dev.storage);
+	setField('kemtheo', dev.kemtheo);
+	setField('gia', dev.gia);
+	setField('ngaymua', dev.ngaymua);
+	setField('baohanh', dev.baohanh);
+	renderAssetPanel();
+  }
+
+  // Ô chọn thiết bị từ danh mục, đặt ở đầu mỗi khối tài sản trong panel
+  function makeCatalogPicker(tr) {
+	var cat = getCatalog();
+	if (!cat.length) return null;
+
+	var sel = document.createElement('select');
+	sel.className = 'catalog-picker';
+
+	var opt0 = document.createElement('option');
+	opt0.value = '';
+	opt0.textContent = t('pickDevice');
+	sel.appendChild(opt0);
+
+	cat.forEach(function (d, i) {
+	  var o = document.createElement('option');
+	  o.value = String(i);
+	  // Hiện kèm Mã tài sản để phân biệt các máy cùng model
+	  o.textContent = d.ma ? (d.ten + '  [' + d.ma + ']') : d.ten;
+	  sel.appendChild(o);
+	});
+
+	sel.addEventListener('change', function () {
+	  if (sel.value === '') return;
+	  applyDeviceToRow(tr, cat[parseInt(sel.value, 10)]);
+	});
+	return sel;
+  }
+
   // Dựng panel chỉnh sửa nhanh cho TẤT CẢ dòng tài sản hiện có (kể cả dòng vừa thêm)
   function renderAssetPanel() {
 	var tbody = document.getElementById('hwBody');
@@ -174,6 +232,9 @@ window.initBBBG = function () {
 	  title.className = 'asset-panel-title';
 	  title.textContent = t('assetItem') + pad(idx + 1);
 	  item.appendChild(title);
+
+	  var picker = makeCatalogPicker(tr);
+	  if (picker) item.appendChild(picker);
 
 	  function makeInput(el, placeholder) {
 		var inp = document.createElement('input');

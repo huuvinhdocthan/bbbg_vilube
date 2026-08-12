@@ -30,6 +30,10 @@
 <div id="appRoot"></div>
 
 <script src="crypto-util.js"></script>
+<!-- Danh mục thiết bị: bản thường (chạy nội bộ) và bản mã hóa (GitHub Pages).
+     Thiếu file nào thì bỏ qua file đó, không gây lỗi. -->
+<script src="data-thietbi.js" onerror="void 0"></script>
+<script src="data-thietbi.enc.js" onerror="void 0"></script>
 <script src="content.enc.js"></script>
 <script src="script.js"></script>
 <script src="lock.js"></script>

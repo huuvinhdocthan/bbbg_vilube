@@ -42,6 +42,22 @@
 
 	window.BBBGCrypto.decrypt(window.BBBG_ENC, pwd)
 	  .then(function (html) {
+		// Giải mã luôn danh mục thiết bị (nếu có bản mã hóa) bằng cùng mật khẩu
+		if (window.BBBG_DEVICES_ENC) {
+		  return window.BBBGCrypto.decrypt(window.BBBG_DEVICES_ENC, pwd)
+			.then(function (json) {
+			  try { window.BBBG_DEVICES = JSON.parse(json); } catch (e) { /* bỏ qua */ }
+			  try { delete window.BBBG_DEVICES_ENC; } catch (e) { window.BBBG_DEVICES_ENC = null; }
+			  return html;
+			})
+			.catch(function () {
+			  // Danh mục dùng mật khẩu khác -> vẫn mở được biên bản, chỉ thiếu ô chọn thiết bị
+			  return html;
+			});
+		}
+		return html;
+	  })
+	  .then(function (html) {
 		appRoot.innerHTML = html;
 		lockScreen.remove();
 		// Xóa dữ liệu mã hóa khỏi bộ nhớ sau khi đã mở
