@@ -103,6 +103,62 @@ window.initBBBG = function () {
   if (toggleBtn) toggleBtn.remove();
   document.getElementById('editPanel').classList.add('open');
 
+  // Đổi chữ 1 nhãn song ngữ (giữ cơ chế data-vi / data-en của applyLanguage)
+  function setLabel(span, vi, en) {
+	if (!span) return;
+	span.setAttribute('data-vi', vi);
+	span.setAttribute('data-en', en);
+	span.textContent = currentLang === 'en' ? en : vi;
+  }
+
+  /* Nhóm "Thông tin chung": gom theo từng bên, mỗi bên 1 khối có viền màu
+   *   BÊN A · BÀN GIAO (xanh dương) — BÊN B · NHẬN (xanh lá) — QUẢN LÝ TRỰC TIẾP (cam, có công tắc) */
+  function groupPartyFields(body) {
+	var grids = body.querySelectorAll(':scope > .asset-panel-grid');
+	function partyBox(cls, vi, en, content) {
+	  var box = document.createElement('div');
+	  box.className = 'party-box ' + cls;
+	  var head = document.createElement('div');
+	  head.className = 'party-head';
+	  var title = document.createElement('span');
+	  setLabel(title, vi, en);
+	  head.appendChild(title);
+	  box.appendChild(head);
+	  content.parentNode.insertBefore(box, content);
+	  box.appendChild(content);
+	  return { box: box, head: head };
+	}
+	if (grids[0]) {
+	  partyBox('party-a', 'Bên A · Bàn giao', 'Party A · Handover', grids[0]);
+	  var a = grids[0].querySelectorAll('label > span[data-en]');
+	  setLabel(a[0], 'Họ tên', 'Full name');
+	}
+	if (grids[1]) {
+	  partyBox('party-b', 'Bên B · Nhận', 'Party B · Receiver', grids[1]);
+	  var b = grids[1].querySelectorAll('label > span[data-en]');
+	  setLabel(b[0], 'Họ tên', 'Full name');
+	}
+
+	// Quản lý trực tiếp: ô tick -> công tắc trên tiêu đề khối; tắt thì ẩn ô nhập
+	var chk = document.getElementById('chkQuanLy');
+	var inp = document.getElementById('inpQuanLy');
+	if (chk && inp) {
+	  var chkRow = chk.closest('label');
+	  var inpLabel = inp.closest('label');
+	  var mgr = partyBox('party-mgr', 'Quản lý trực tiếp', 'Direct manager', inpLabel);
+	  var sw = document.createElement('label');
+	  sw.className = 'party-switch';
+	  sw.appendChild(chk);
+	  mgr.head.appendChild(sw);
+	  var lbl = inpLabel.querySelector('span[data-en]');
+	  if (lbl) lbl.style.display = 'none';      // tiêu đề khối đã có chữ "Quản lý trực tiếp"
+	  if (chkRow) chkRow.remove();
+	  function syncMgr() { mgr.box.classList.toggle('off', !chk.checked); }
+	  chk.addEventListener('change', syncMgr);
+	  syncMgr();
+	}
+  }
+
   (function buildSidebarSections() {
 	var panel = document.getElementById('editPanel');
 	var oldTitle = panel.querySelector('.panel-section-title');
@@ -126,6 +182,7 @@ window.initBBBG = function () {
 	var info = makeSection('secInfo', '📋', 'General info', 'Thông tin chung');
 	while (panel.firstChild && panel.firstChild !== oldTitle) info.body.appendChild(panel.firstChild);
 	panel.insertBefore(info.sec, oldTitle);
+	groupPartyFields(info.body);
 
 	// Nhóm 2: ô tìm danh mục + các thẻ thiết bị, kèm nút "+ Thêm" trên đầu
 	var dev = makeSection('secDevices', '💻', 'Devices', 'Thiết bị');
