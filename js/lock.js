@@ -22,7 +22,7 @@
   }
 
   if (typeof window.BBBG_ENC === 'undefined' || !window.BBBG_ENC) {
-	showError('Chưa có dữ liệu đã mã hóa (thiếu file content.enc.js). Hãy chạy "tao-mat-khau.html" để tạo file này trước.');
+	showError('Chưa có dữ liệu đã mã hóa (thiếu file data/content.enc.js). Hãy chạy "tao-mat-khau.html" để tạo file này trước.');
 	if (submitBtn) submitBtn.disabled = true;
 	return;
   }
