@@ -219,12 +219,11 @@
  .asset-panel-item input { font-size:12px; padding:5px 7px; }
 
  @media print {
-	@page { size:A4; margin:14mm 16mm; }
+	@page { size:A4; margin:10mm 16mm; }  /* lề trên/dưới 10mm (thu nhỏ để thêm chỗ), trái/phải 16mm */
 	body { background:#fff; }
 	#editToolbar { display:none !important; }
 	.app-layout { display:block; padding:0; }
 	.doc-wrapper { display:block; }
-	/* Giãn dòng & khoảng cách giống trên màn hình (1.5) — chỉ bảng thiết bị được nén gọn */
 	.WordSection1 { box-shadow:none; margin:0; padding:0; max-width:100%; }
 	.editable-field { border-bottom:none !important; background:transparent !important; }
 	.edit-hint { display:none !important; }
@@ -270,7 +269,7 @@
  }
  /* Chừa chỗ cho thanh cố định để không che nội dung */
  body.has-topbar .app-layout { padding-top:76px; }
- body.has-topbar #editToolbar { top:76px; max-height:calc(100vh - 96px); }
+ body.has-topbar #editToolbar { top:76px; max-height:calc(100vh - 96px); box-sizing:border-box; }  /* tính cả padding + viền vào chiều cao */
  #docTopBar button {
 	border:none; border-radius:6px; padding:8px 14px; font-size:13px; cursor:pointer;
 	font-family:inherit; color:#fff;
@@ -284,3 +283,102 @@
 	#docTopBar { display:none !important; }
 	body.has-topbar .app-layout { padding-top:0; }
  }
+
+ /* ---- Tự canh trang khi in / xuất Word (html.fit-on — bật bởi JS fitPages()) ----
+  * Giãn dòng + khoảng cách theo 2 biến: --lh1 (trang 1, trước mục II) và --lh2 (trang 2).
+  * JS đo nội dung theo khổ A4 rồi tăng/giảm 2 biến để mỗi trang vừa kín, không chừa khoảng trống.
+  * Khoảng cách đoạn / dòng danh sách / tiêu đề mục co giãn theo cùng biến. */
+ :root { --lh1:1.25; --lh2:1.4; }
+ html.fit-on .WordSection1 { width:178mm; max-width:none; margin:0; padding:0; box-shadow:none; } /* 210mm - lề 2x16mm */
+ html.fit-on .WordSection1 p, html.fit-on .WordSection1 li, html.fit-on .WordSection1 div,
+ html.fit-on .WordSection1 table.plain-table td { line-height:var(--lh2) !important; }
+ html.fit-on .WordSection1 p { margin:0 0 calc((var(--lh2) - 1) * 10pt) !important; }
+ html.fit-on .WordSection1 p.section-title { margin:calc((var(--lh2) - 1) * 20pt) 0 calc((var(--lh2) - 1) * 10pt) !important; }
+ html.fit-on .WordSection1 ul.plain li { margin-bottom:calc((var(--lh2) - 1) * 10pt) !important; }
+ html.fit-on .WordSection1 p.pg1, html.fit-on .WordSection1 div.pg1, html.fit-on .WordSection1 ul.pg1 li,
+ html.fit-on .WordSection1 table.plain-table.pg1 td { line-height:var(--lh1) !important; }
+ html.fit-on .WordSection1 p.pg1 { margin:0 0 calc((var(--lh1) - 1) * 10pt) !important; }
+ html.fit-on .WordSection1 p.section-title.pg1 { margin:calc((var(--lh1) - 1) * 20pt) 0 calc((var(--lh1) - 1) * 10pt) !important; }
+ html.fit-on .WordSection1 ul.pg1 li { margin-bottom:calc((var(--lh1) - 1) * 10pt) !important; }
+ /* Bảng thiết bị luôn nén gọn, không co giãn */
+ html.fit-on .WordSection1 table.doc-table td { padding:2px 5px !important; line-height:1.15 !important; }
+ html.fit-on .WordSection1 table.doc-table ul.plain li { margin-bottom:0 !important; line-height:1.15 !important; }
+ /* Khi đo trên màn hình: ẩn phần chỉ dùng để chỉnh sửa, giống hệt bản in */
+ html.fit-on .editable-field { border-bottom:none !important; background:transparent !important; }
+ html.fit-on .editable-field[data-role="ten"] { margin-bottom:0 !important; padding:0 !important; }
+ html.fit-on .edit-hint, html.fit-on .row-del-btn, html.fit-on .row-thuhoi-btn { display:none !important; }
+
+ /* ---- Sidebar: 2 nhóm thu gọn được (Thông tin chung / Thiết bị) ---- */
+ .side-sec { border:1px solid #e2e8f0; border-radius:8px; background:#fff; }
+ .side-sec + .side-sec { margin-top:4px; }
+ .side-sec > summary {
+	list-style:none; cursor:pointer; user-select:none;
+	display:flex; align-items:center; gap:8px;
+	padding:10px 12px; font-size:14px; font-weight:700; color:#1e293b;
+	background:#f8fafc; border-radius:8px;
+ }
+ .side-sec > summary::-webkit-details-marker { display:none; }
+ .side-sec > summary::after { content:"▾"; margin-left:auto; color:#64748b; transition:transform .15s; }
+ .side-sec:not([open]) > summary::after { transform:rotate(-90deg); }
+ .side-sec[open] > summary { border-bottom:1px solid #e2e8f0; border-radius:8px 8px 0 0; }
+ .side-sec-count { font-weight:600; color:#64748b; font-size:13px; }
+ #editToolbar .side-sec-add {
+	width:auto; margin-left:auto; padding:4px 12px; font-size:12.5px; font-weight:700;
+	background:#2f7dee; color:#fff; border:none; border-radius:6px;
+ }
+ .side-sec > summary .side-sec-add { order:2; }
+ .side-sec > summary::after { order:3; margin-left:8px; }
+ /* Nhóm không có nút "+ Thêm": đẩy mũi tên ra mép phải */
+ .side-sec > summary:not(:has(.side-sec-add))::after { margin-left:auto; }
+ .side-sec-body { padding:12px; display:flex; flex-direction:column; gap:12px; }
+
+ /* ---- Thẻ thiết bị: chỉ mở 1 thẻ; thẻ đóng chỉ còn 1 dòng tóm tắt ---- */
+ #assetPanelList { display:flex; flex-direction:column; gap:8px; }
+ .asset-card { border:1px solid #dbe3ee; border-radius:8px; background:#fff; overflow:hidden; }
+ .asset-card.open { border-color:#2f7dee; box-shadow:0 0 0 3px rgba(47,125,238,.12); }
+ .asset-card-head {
+	display:flex; align-items:center; gap:8px; padding:9px 10px;
+	cursor:pointer; background:#f8fafc; user-select:none;
+ }
+ .asset-card.open .asset-card-head { background:#eaf2ff; border-bottom:1px solid #dbe3ee; }
+ .asset-card-no {
+	flex-shrink:0; min-width:24px; height:24px; border-radius:6px; padding:0 4px; box-sizing:border-box;
+	display:flex; align-items:center; justify-content:center;
+	background:#2f7dee; color:#fff; font-size:12px; font-weight:700;
+ }
+ .asset-card-name { flex:1; min-width:0; font-size:13.5px; font-weight:600; color:#1e293b;
+	overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+ .asset-card-ma { flex-shrink:0; font-size:11px; font-weight:600; color:#2c5ea8; background:#e3edfc;
+	padding:2px 8px; border-radius:10px; max-width:35%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+ #editToolbar .asset-card-del {
+	flex-shrink:0; width:28px; height:28px; padding:0; border-radius:6px;
+	background:transparent; color:#94a3b8; border:1px solid transparent; font-size:14px; line-height:1;
+ }
+ #editToolbar .asset-card-del:hover { background:#fde8ec; border-color:#f5b5c2; color:#c4314b; opacity:1; }
+ .asset-card-arrow { flex-shrink:0; color:#64748b; transition:transform .15s; }
+ .asset-card:not(.open) .asset-card-arrow { transform:rotate(-90deg); }
+ .asset-card-body { display:none; padding:12px; flex-direction:column; gap:10px; }
+ .asset-card.open .asset-card-body { display:flex; }
+
+ /* Ô nhập có nhãn phía trên, xếp 2-3 cột */
+ .fld-row { display:flex; gap:8px; min-width:0; }
+ .fld { display:flex; flex-direction:column; gap:3px; flex:1 1 0; min-width:0; }
+ .fld.fld-narrow { flex:0 0 56px; }
+ .fld-label { font-size:11.5px; font-weight:600; color:#64748b; }
+ #editPanel .fld input, #editPanel .fld select { height:34px; font-size:13.5px; padding:5px 9px; }
+ .fld-sub { font-size:12.5px; font-weight:700; color:#334155; padding-top:6px; border-top:1px dashed #e2e8f0; }
+ #editPanel .asset-card-body .checkbox-row { font-size:13px; font-weight:500; color:#334155; }
+ #editPanel .toggle-input { margin-top:-4px; }
+
+ /* Dòng thiết bị đang sửa: tô sáng trong biên bản (chỉ trên màn hình) */
+ #hwBody tr.row-active > td { background:#fff8e1; }
+ #hwBody tr.row-active > td:first-child { box-shadow:inset 3px 0 0 #f5a623; }
+ @media print { #hwBody tr.row-active > td { background:none !important; box-shadow:none !important; } }
+ html.fit-on #hwBody tr.row-active > td { background:none !important; box-shadow:none !important; }
+
+ /* Danh mục thiết bị: ẩn danh sách gợi ý cho tới khi bấm vào ô tìm / gõ từ khóa */
+ .catalog-box:not(.show-results) .catalog-results { display:none; }
+
+ /* Ô tìm danh mục nằm trong từng thẻ thiết bị */
+ .asset-card-body .catalog-box { margin:0; padding:8px; }
+ .asset-card-body .catalog-box .catalog-search { flex:1 1 100%; height:36px; font-size:13.5px; }

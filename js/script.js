@@ -8,9 +8,7 @@ window.initBBBG = function () {
   var DICT = {
 	assetItem:      { vi: 'Tài sản #',              en: 'Asset #' },
 	phTen:          { vi: 'Tên tài sản',            en: 'Asset name' },
-	searchDevice:   { vi: '🔍 Gõ tên hoặc mã thiết bị...', en: '🔍 Type device name or code...' },
-	applyToRow:     { vi: '↳ Áp dụng vào dòng ',    en: '↳ Apply to row ' },
-	applyToNew:     { vi: '➕ Thêm thành dòng mới',  en: '➕ Add as new row' },
+	searchDevice:   { vi: '🔍 Chọn nhanh từ danh mục: gõ tên hoặc mã...', en: '🔍 Pick from catalog: type name or code...' },
 	noDevice:       { vi: 'Không tìm thấy thiết bị nào.', en: 'No matching device found.' },
 	phKemTheo:      { vi: 'VD: 01 Adapter sạc Dell', en: 'e.g. 01 Dell power adapter' },
 	chkKemTheo:     { vi: ' Có phụ kiện kèm theo',  en: ' Has included accessories' },
@@ -35,8 +33,13 @@ window.initBBBG = function () {
 	},
 	newTen:         { vi: 'Tên tài sản',            en: 'Asset name' },
 	newMa:          { vi: 'Mã tài sản',             en: 'Asset code' },
-	newTinhTrang:   { vi: 'Mới',                    en: 'New' },
-	docTitle:       { vi: 'Biên bản bàn giao tài sản', en: 'Asset Handover Minutes' }
+	newTinhTrang:   { vi: 'Mới 100%',               en: '100% new' },
+	condUsed:       { vi: 'Đã sử dụng',             en: 'Used' },
+	docTitle:       { vi: 'Biên bản bàn giao tài sản', en: 'Asset Handover Minutes' },
+	lblCpu:         { vi: 'CPU',                    en: 'CPU' },
+	lblRam:         { vi: 'RAM',                    en: 'RAM' },
+	lblStorage:     { vi: 'Ổ cứng',                 en: 'Storage' },
+	btnAddDevice:   { vi: '+ Thêm',                 en: '+ Add' }
   };
 
   var MONTHS_EN = ['January', 'February', 'March', 'April', 'May', 'June',
@@ -58,6 +61,9 @@ window.initBBBG = function () {
 	});
 	document.querySelectorAll('.row-del-btn').forEach(function (btn) {
 	  btn.title = t('titleDel');
+	});
+	document.querySelectorAll('.side-sec-add').forEach(function (btn) {
+	  btn.textContent = t('btnAddDevice');
 	});
 	document.documentElement.lang = currentLang;
 	document.title = t('docTitle');
@@ -96,6 +102,61 @@ window.initBBBG = function () {
   var toggleBtn = document.getElementById('toggleEditBtn');
   if (toggleBtn) toggleBtn.remove();
   document.getElementById('editPanel').classList.add('open');
+
+  (function buildSidebarSections() {
+	var panel = document.getElementById('editPanel');
+	var oldTitle = panel.querySelector('.panel-section-title');
+	var assetList = document.getElementById('assetPanelList');
+
+	function makeSection(id, iconVi, titleEn, titleVi) {
+	  var sec = document.createElement('details');
+	  sec.className = 'side-sec';
+	  sec.id = id;
+	  sec.open = true;
+	  var sum = document.createElement('summary');
+	  sum.innerHTML = '<span class="side-sec-title" data-en="' + iconVi + ' ' + titleEn + '">' + iconVi + ' ' + titleVi + '</span>';
+	  sec.appendChild(sum);
+	  var body = document.createElement('div');
+	  body.className = 'side-sec-body';
+	  sec.appendChild(body);
+	  return { sec: sec, sum: sum, body: body };
+	}
+
+	// Nhóm 1: mọi trường nằm trước tiêu đề "Tài sản phần cứng"
+	var info = makeSection('secInfo', '📋', 'General info', 'Thông tin chung');
+	while (panel.firstChild && panel.firstChild !== oldTitle) info.body.appendChild(panel.firstChild);
+	panel.insertBefore(info.sec, oldTitle);
+
+	// Nhóm 2: ô tìm danh mục + các thẻ thiết bị, kèm nút "+ Thêm" trên đầu
+	var dev = makeSection('secDevices', '💻', 'Devices', 'Thiết bị');
+	var count = document.createElement('span');
+	count.id = 'secDevicesCount';
+	count.className = 'side-sec-count';
+	dev.sum.appendChild(count);
+	var addBtn = document.createElement('button');
+	addBtn.type = 'button';
+	addBtn.className = 'side-sec-add';
+	addBtn.textContent = t('btnAddDevice');
+	addBtn.addEventListener('click', function (e) {
+	  e.preventDefault();          // không đóng/mở nhóm khi bấm nút
+	  e.stopPropagation();
+	  addHwRow();
+	  openAssetIdx = document.querySelectorAll('#hwBody tr').length - 1;
+	  dev.sec.open = true;
+	  applyLanguage();
+	  var cards = document.querySelectorAll('#assetPanelList .asset-card');
+	  var last = cards[cards.length - 1];
+	  if (last) {
+		last.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+		var first = last.querySelector('.catalog-search') || last.querySelector('input');
+		if (first) first.focus();
+	  }
+	});
+	dev.sum.appendChild(addBtn);
+	dev.body.appendChild(assetList);
+	panel.insertBefore(dev.sec, oldTitle);
+	oldTitle.remove();
+  })();
 
   function pad(n) { return String(n).padStart(2, '0'); }
 
@@ -240,75 +301,35 @@ window.initBBBG = function () {
 	applyLanguage(); // dịch nhãn mới + dựng lại panel
   }
 
-  /* ---- Ô TÌM KIẾM THIẾT BỊ (khối riêng, đặt đầu mục Tài sản phần cứng) ---- */
-  var catalogQuery = '';   // giữ lại từ khóa khi panel được dựng lại
-  var catalogTarget = '0'; // dòng sẽ được áp dụng ('new' = thêm dòng mới)
-
+  /* ---- Ô TÌM DANH MỤC — nằm ngay trong thẻ của từng thiết bị ----
+   * Chọn kết quả -> điền thẳng vào ĐÚNG dòng của thẻ đó (không còn bước "Áp dụng vào dòng"). */
   function normText(s) {
 	return stripAccents(String(s || '')).toLowerCase();
   }
 
-  function buildCatalogSearchBox() {
-	var list = document.getElementById('assetPanelList');
-	if (!list) return;
-
-	var old = document.getElementById('catalogSearchBox');
-	if (old) old.remove();
-
+  function makeCatalogPicker(tr) {
 	var cat = getCatalog();
-	if (!cat.length) return;
+	if (!cat.length) return null;
 
 	var box = document.createElement('div');
-	box.id = 'catalogSearchBox';
 	box.className = 'catalog-box';
 
-	// Chọn dòng sẽ được áp dụng
-	var rows = document.querySelectorAll('#hwBody tr');
-	var target = document.createElement('select');
-	target.className = 'catalog-target';
-	Array.prototype.forEach.call(rows, function (tr, i) {
-	  var o = document.createElement('option');
-	  o.value = String(i);
-	  o.textContent = t('applyToRow') + pad(i + 1);
-	  target.appendChild(o);
-	});
-	var oNew = document.createElement('option');
-	oNew.value = 'new';
-	oNew.textContent = t('applyToNew');
-	target.appendChild(oNew);
-	if (catalogTarget === 'new' || parseInt(catalogTarget, 10) < rows.length) {
-	  target.value = catalogTarget;
-	} else {
-	  target.value = '0';
-	  catalogTarget = '0';
-	}
-	target.addEventListener('change', function () { catalogTarget = target.value; });
-	box.appendChild(target);
-
-	// Ô nhập từ khóa
 	var inp = document.createElement('input');
 	inp.type = 'text';
 	inp.className = 'catalog-search';
 	inp.placeholder = t('searchDevice');
-	inp.value = catalogQuery;
 	box.appendChild(inp);
 
-	// Vùng kết quả
 	var res = document.createElement('div');
 	res.className = 'catalog-results';
 	box.appendChild(res);
 
 	function renderResults() {
-	  var q = normText(catalogQuery).trim();
+	  var q = normText(inp.value).trim();
 	  res.innerHTML = '';
-
-	  var matches = cat.map(function (d, i) { return { d: d, i: i }; });
-	  if (q) {
-		matches = matches.filter(function (m) {
-		  return normText(m.d.ten).indexOf(q) >= 0 || normText(m.d.ma).indexOf(q) >= 0;
-		});
-	  }
-
+	  var matches = cat.filter(function (d) {
+		return !q || normText(d.ten).indexOf(q) >= 0 || normText(d.ma).indexOf(q) >= 0;
+	  });
 	  if (!matches.length) {
 		var none = document.createElement('div');
 		none.className = 'catalog-none';
@@ -316,35 +337,53 @@ window.initBBBG = function () {
 		res.appendChild(none);
 		return;
 	  }
-
-	  matches.slice(0, 30).forEach(function (m) {
+	  matches.slice(0, 30).forEach(function (d) {
 		var it = document.createElement('div');
 		it.className = 'catalog-result';
-		var tp = window.BBBG_getType ? window.BBBG_getType(m.d.loai) : { icon: '💻' };
+		var tp = window.BBBG_getType ? window.BBBG_getType(d.loai) : { icon: '💻' };
 		it.innerHTML =
-		  '<span class="cat-name">' + tp.icon + ' ' + escHtml(m.d.ten) + '</span>' +
-		  (m.d.ma ? '<span class="cat-ma">' + escHtml(m.d.ma) + '</span>' : '');
-		it.addEventListener('click', function () {
-		  var tr;
-		  if (catalogTarget === 'new') {
-			tr = addHwRow();
-			catalogTarget = String(document.querySelectorAll('#hwBody tr').length - 1);
-		  } else {
-			tr = document.querySelectorAll('#hwBody tr')[parseInt(catalogTarget, 10)];
-		  }
-		  if (tr) applyDeviceToRow(tr, m.d);
-		});
+		  '<span class="cat-name">' + tp.icon + ' ' + escHtml(d.ten) + '</span>' +
+		  (d.ma ? '<span class="cat-ma">' + escHtml(d.ma) + '</span>' : '');
+		it.addEventListener('mousedown', function (e) { e.preventDefault(); }); // giữ focus, tránh đóng danh sách trước khi click
+		it.addEventListener('click', function () { applyDeviceToRow(tr, d); });
 		res.appendChild(it);
 	  });
 	}
 
-	inp.addEventListener('input', function () {
-	  catalogQuery = inp.value;
-	  renderResults();
+	// Danh sách gợi ý chỉ hiện khi đang ở trong ô tìm — đỡ chiếm chỗ
+	inp.addEventListener('focus', function () { renderResults(); box.classList.add('show-results'); });
+	inp.addEventListener('input', function () { renderResults(); box.classList.add('show-results'); });
+	inp.addEventListener('blur', function () { box.classList.remove('show-results'); });
+	inp.addEventListener('keydown', function (e) {
+	  if (e.key === 'Escape') { inp.blur(); }
+	  if (e.key === 'Enter') {      // Enter = chọn kết quả đầu tiên
+		var first = res.querySelector('.catalog-result');
+		if (first) first.click();
+	  }
 	});
-	renderResults();
+	return box;
+  }
 
-	list.parentNode.insertBefore(box, list);
+  /* ---- Panel thiết bị: mỗi thiết bị 1 thẻ thu gọn được, chỉ mở 1 thẻ mỗi lúc ----
+   * Bấm vào dòng thiết bị trong biên bản -> tự mở đúng thẻ đó và tô sáng dòng. */
+  var openAssetIdx = 0;   // thẻ đang mở (-1 = đóng hết)
+
+  function highlightRow(idx) {
+	document.querySelectorAll('#hwBody tr').forEach(function (tr, i) {
+	  tr.classList.toggle('row-active', i === idx);
+	});
+  }
+
+  function openAsset(idx, scroll) {
+	openAssetIdx = idx;
+	document.querySelectorAll('#assetPanelList .asset-card').forEach(function (card, i) {
+	  card.classList.toggle('open', i === idx);
+	});
+	highlightRow(idx);
+	if (scroll && idx >= 0) {
+	  var card = document.querySelectorAll('#assetPanelList .asset-card')[idx];
+	  if (card) card.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+	}
   }
 
   // Dựng panel chỉnh sửa nhanh cho TẤT CẢ dòng tài sản hiện có (kể cả dòng vừa thêm)
@@ -353,8 +392,12 @@ window.initBBBG = function () {
 	var list = document.getElementById('assetPanelList');
 	if (!tbody || !list) return;
 	list.innerHTML = '';
-	buildCatalogSearchBox();
-	Array.prototype.forEach.call(tbody.querySelectorAll('tr'), function (tr, idx) {
+	var rows = tbody.querySelectorAll('tr');
+	if (openAssetIdx >= rows.length) openAssetIdx = rows.length - 1;
+	var countEl = document.getElementById('secDevicesCount');
+	if (countEl) countEl.textContent = '(' + rows.length + ')';
+
+	Array.prototype.forEach.call(rows, function (tr, idx) {
 	  var tenEl = tr.querySelector('[data-role="ten"]');
 	  var slEl = tr.querySelector('[data-role="sl"]');
 	  var maEl = tr.querySelector('[data-role="ma"]');
@@ -367,13 +410,58 @@ window.initBBBG = function () {
 	  if (!tenEl) return;
 
 	  var item = document.createElement('div');
-	  item.className = 'asset-panel-item';
+	  item.className = 'asset-card' + (idx === openAssetIdx ? ' open' : '');
 
-	  var title = document.createElement('div');
-	  title.className = 'asset-panel-title';
-	  title.textContent = t('assetItem') + pad(idx + 1);
-	  item.appendChild(title);
+	  // Đầu thẻ: số thứ tự · tên · mã · nút xóa · mũi tên
+	  var head = document.createElement('div');
+	  head.className = 'asset-card-head';
+	  var noEl = document.createElement('span');
+	  noEl.className = 'asset-card-no';
+	  noEl.textContent = pad(idx + 1);
+	  var nameEl = document.createElement('span');
+	  nameEl.className = 'asset-card-name';
+	  var maTag = document.createElement('span');
+	  maTag.className = 'asset-card-ma';
+	  var delBtn = document.createElement('button');
+	  delBtn.type = 'button';
+	  delBtn.className = 'asset-card-del';
+	  delBtn.title = t('titleDel');
+	  delBtn.textContent = '🗑';
+	  var arrow = document.createElement('span');
+	  arrow.className = 'asset-card-arrow';
+	  arrow.textContent = '▾';
+	  head.appendChild(noEl);
+	  head.appendChild(nameEl);
+	  head.appendChild(maTag);
+	  head.appendChild(delBtn);
+	  head.appendChild(arrow);
+	  item.appendChild(head);
 
+	  function refreshHead() {
+		nameEl.textContent = tenEl.textContent.trim() || t('newTen');
+		var ma = maEl ? maEl.textContent.trim() : '';
+		maTag.textContent = ma;
+		maTag.style.display = ma ? '' : 'none';
+	  }
+	  refreshHead();
+
+	  head.addEventListener('click', function () {
+		openAsset(item.classList.contains('open') ? -1 : idx, false);
+	  });
+	  delBtn.addEventListener('click', function (e) {
+		e.stopPropagation();
+		var rowDel = tr.querySelector('.row-del-btn');
+		if (rowDel) rowDel.click();   // dùng lại xử lý xóa sẵn có (hỏi xác nhận, giữ tối thiểu 1 dòng)
+	  });
+
+	  var body = document.createElement('div');
+	  body.className = 'asset-card-body';
+	  item.appendChild(body);
+
+	  var picker = makeCatalogPicker(tr);
+	  if (picker) body.appendChild(picker);
+
+	  // 1 ô nhập có nhãn phía trên; gõ vào ô -> cập nhật ngay vào biên bản
 	  function makeInput(el, placeholder) {
 		var inp = document.createElement('input');
 		inp.type = 'text';
@@ -381,12 +469,52 @@ window.initBBBG = function () {
 		inp.value = el ? el.textContent.trim() : '';
 		inp.addEventListener('input', function () {
 		  if (el) el.textContent = inp.value;
+		  refreshHead();
 		});
 		return inp;
 	  }
+	  function field(labelText, inp, cls) {
+		var wrap = document.createElement('label');
+		wrap.className = 'fld' + (cls ? ' ' + cls : '');
+		var lb = document.createElement('span');
+		lb.className = 'fld-label';
+		lb.textContent = labelText;
+		wrap.appendChild(lb);
+		wrap.appendChild(inp);
+		return wrap;
+	  }
+	  function row(cols) {
+		var r = document.createElement('div');
+		r.className = 'fld-row';
+		for (var i = 0; i < cols.length; i++) r.appendChild(cols[i]);
+		body.appendChild(r);
+		return r;
+	  }
+	  function sub(text) {
+		var s = document.createElement('div');
+		s.className = 'fld-sub';
+		s.textContent = text;
+		body.appendChild(s);
+	  }
 
 	  var tenInp = makeInput(tenEl, t('phTen'));
-	  item.appendChild(tenInp);
+	  row([field(t('phTen'), tenInp)]);
+
+	  // CPU / RAM / Ổ cứng — chỉ hiện khi dòng có các thông số này (máy tính)
+	  var specInputs = [];
+	  [['cpu', 'lblCpu'], ['ram', 'lblRam'], ['storage', 'lblStorage']].forEach(function (s) {
+		var el = tr.querySelector('[data-role="' + s[0] + '"]');
+		if (!el) return;
+		var inp = makeInput(el, t(s[1]));
+		el.addEventListener('input', function () { inp.value = el.textContent; });
+		specInputs.push(field(t(s[1]), inp));
+	  });
+	  if (specInputs.length) row(specInputs).classList.add('fld-row-3');
+
+	  var slInp = makeInput(slEl, t('phSl'));
+	  var maInp = makeInput(maEl, t('phMa'));
+	  var giaInp = makeInput(giaEl, t('phGia'));
+	  row([field(t('phSl'), slInp, 'fld-narrow'), field(t('phMa'), maInp), field(t('phGia'), giaInp)]);
 
 	  /* Tạo cặp [tick bật/tắt] + [ô nhập] cho 1 dòng phụ trong ô Tên tài sản.
 	   * Tick vào -> thêm dòng "<nhãn>: ..." vào bảng. Bỏ tick -> xóa dòng đó. */
@@ -400,14 +528,16 @@ window.initBBBG = function () {
 		chk.checked = !!el;
 		chkLabel.appendChild(chk);
 		chkLabel.appendChild(document.createTextNode(chkText));
-		item.appendChild(chkLabel);
+		body.appendChild(chkLabel);
 
 		var inp = document.createElement('input');
 		inp.type = 'text';
 		inp.placeholder = phText;
 		inp.value = el ? el.textContent.trim() : '';
 		inp.disabled = !el;
-		item.appendChild(inp);
+		inp.className = 'toggle-input';
+		inp.style.display = el ? '' : 'none';
+		body.appendChild(inp);
 
 		inp.addEventListener('input', function () {
 		  if (el) el.textContent = inp.value;
@@ -435,6 +565,7 @@ window.initBBBG = function () {
 			  el.addEventListener('input', function () { inp.value = el.textContent; });
 			}
 			inp.disabled = false;
+			inp.style.display = '';
 			inp.focus();
 		  } else {
 			if (el) {
@@ -444,6 +575,7 @@ window.initBBBG = function () {
 			}
 			inp.value = '';
 			inp.disabled = true;
+			inp.style.display = 'none';
 		  }
 		});
 
@@ -453,33 +585,53 @@ window.initBBBG = function () {
 	  makeSpecToggle('kemtheo', 'Kèm theo: ', 'Included: ', t('chkKemTheo'), t('phKemTheo'));
 	  makeSpecToggle('khac', 'Khác: ', 'Other: ', t('chkKhac'), t('phKhac'));
 
-	  var grid = document.createElement('div');
-	  grid.className = 'asset-panel-grid';
-	  var slInp = makeInput(slEl, t('phSl'));
-	  var maInp = makeInput(maEl, t('phMa'));
-	  grid.appendChild(slInp);
-	  grid.appendChild(maInp);
-	  item.appendChild(grid);
-
-	  var giaInp = makeInput(giaEl, t('phGia'));
-	  item.appendChild(giaInp);
-
-	  var ghiChuTitle = document.createElement('div');
-	  ghiChuTitle.className = 'asset-panel-title';
-	  ghiChuTitle.style.marginTop = '2px';
-	  ghiChuTitle.textContent = t('ghiChu');
-	  item.appendChild(ghiChuTitle);
-
-	  var tinhTrangInp = makeInput(tinhTrangEl, t('phTinhTrang'));
-	  item.appendChild(tinhTrangInp);
-
-	  var grid2 = document.createElement('div');
-	  grid2.className = 'asset-panel-grid';
-	  var ngayMuaInp = makeInput(ngayMuaEl, t('phNgayMua'));
+	  sub('📝 ' + t('ghiChu'));
+	  // Tình trạng: chọn 1 trong 2 — "Mới 100%" / "Đã sử dụng"
+	  var COND_OPTS = [t('newTinhTrang'), t('condUsed')];
+	  function condValue(text) {
+		var n = normText(text);
+		if (/su dung|used/.test(n)) return t('condUsed');
+		if (/moi|new/.test(n)) return t('newTinhTrang');
+		return text.trim();
+	  }
+	  var tinhTrangInp = document.createElement('select');
+	  function fillCond(cur) {
+		tinhTrangInp.innerHTML = '';
+		var opts = COND_OPTS.slice();
+		if (cur && opts.indexOf(cur) < 0) opts.push(cur);   // giữ lại nội dung cũ tự gõ (nếu có)
+		opts.forEach(function (o) {
+		  var op = document.createElement('option');
+		  op.value = o;
+		  op.textContent = o;
+		  tinhTrangInp.appendChild(op);
+		});
+		tinhTrangInp.value = cur || COND_OPTS[0];
+	  }
+	  var condCur = tinhTrangEl ? condValue(tinhTrangEl.textContent) : COND_OPTS[0];
+	  fillCond(condCur);
+	  if (tinhTrangEl && tinhTrangEl.textContent.trim() !== condCur) tinhTrangEl.textContent = condCur;
+	  tinhTrangInp.addEventListener('change', function () {
+		if (tinhTrangEl) tinhTrangEl.textContent = tinhTrangInp.value;
+	  });
+	  // Ngày mua: ô chọn ngày có lịch. Biên bản vẫn ghi dd/mm/yyyy ("--/--/----" khi để trống)
+	  function dmyToIso(txt) {
+		var m = /(\d{1,2})\s*[\/.-]\s*(\d{1,2})\s*[\/.-]\s*(\d{4})/.exec(txt || '');
+		return m ? m[3] + '-' + pad(parseInt(m[2], 10)) + '-' + pad(parseInt(m[1], 10)) : '';
+	  }
+	  var ngayMuaInp = document.createElement('input');
+	  ngayMuaInp.type = 'date';
+	  ngayMuaInp.value = ngayMuaEl ? dmyToIso(ngayMuaEl.textContent) : '';
+	  ngayMuaInp.addEventListener('change', function () {
+		if (!ngayMuaEl) return;
+		var p = ngayMuaInp.value.split('-');
+		ngayMuaEl.textContent = p.length === 3 ? p[2] + '/' + p[1] + '/' + p[0] : '--/--/----';
+	  });
+	  ngayMuaInp.addEventListener('click', function () {
+		if (typeof ngayMuaInp.showPicker === 'function') { try { ngayMuaInp.showPicker(); } catch (e) { /* bỏ qua */ } }
+	  });
 	  var baoHanhInp = makeInput(baoHanhEl, t('phBaoHanh'));
-	  grid2.appendChild(ngayMuaInp);
-	  grid2.appendChild(baoHanhInp);
-	  item.appendChild(grid2);
+	  row([field(t('phTinhTrang'), tinhTrangInp)]);
+	  row([field(t('phNgayMua'), ngayMuaInp), field(t('phBaoHanh'), baoHanhInp)]);
 
 	  // Tick "Có thu hồi thiết bị cũ" — bật thì tạo mục trong Ghi Chú, tắt thì xóa mục đó
 	  var thuHoiCheckLabel = document.createElement('label');
@@ -489,14 +641,16 @@ window.initBBBG = function () {
 	  thuHoiCheck.checked = !!thuHoiEl;
 	  thuHoiCheckLabel.appendChild(thuHoiCheck);
 	  thuHoiCheckLabel.appendChild(document.createTextNode(t('chkThuHoi')));
-	  item.appendChild(thuHoiCheckLabel);
+	  body.appendChild(thuHoiCheckLabel);
 
 	  var thuHoiInp = document.createElement('input');
 	  thuHoiInp.type = 'text';
 	  thuHoiInp.placeholder = t('phThuHoi');
 	  thuHoiInp.value = thuHoiEl ? thuHoiEl.textContent.trim() : '';
 	  thuHoiInp.disabled = !thuHoiEl;
-	  item.appendChild(thuHoiInp);
+	  thuHoiInp.className = 'toggle-input';
+	  thuHoiInp.style.display = thuHoiEl ? '' : 'none';
+	  body.appendChild(thuHoiInp);
 
 	  thuHoiInp.addEventListener('input', function () {
 		if (thuHoiEl) thuHoiEl.textContent = thuHoiInp.value;
@@ -518,6 +672,7 @@ window.initBBBG = function () {
 			thuHoiEl.addEventListener('input', function () { thuHoiInp.value = thuHoiEl.textContent; });
 		  }
 		  thuHoiInp.disabled = false;
+		  thuHoiInp.style.display = '';
 		  thuHoiInp.focus();
 		} else {
 		  if (thuHoiEl) {
@@ -527,22 +682,38 @@ window.initBBBG = function () {
 		  }
 		  thuHoiInp.value = '';
 		  thuHoiInp.disabled = true;
+		  thuHoiInp.style.display = 'none';
 		}
 	  });
 
 	  list.appendChild(item);
 
 	  // Đồng bộ ngược: gõ/dán trực tiếp trong bảng cũng khớp value vào ô panel tương ứng
-	  if (tenEl) tenEl.addEventListener('input', function () { tenInp.value = tenEl.textContent; });
+	  if (tenEl) tenEl.addEventListener('input', function () { tenInp.value = tenEl.textContent; refreshHead(); });
 	  if (slEl) slEl.addEventListener('input', function () { slInp.value = slEl.textContent; });
-	  if (maEl) maEl.addEventListener('input', function () { maInp.value = maEl.textContent; });
+	  if (maEl) maEl.addEventListener('input', function () { maInp.value = maEl.textContent; refreshHead(); });
 	  if (giaEl) giaEl.addEventListener('input', function () { giaInp.value = giaEl.textContent; });
-	  if (tinhTrangEl) tinhTrangEl.addEventListener('input', function () { tinhTrangInp.value = tinhTrangEl.textContent; });
-	  if (ngayMuaEl) ngayMuaEl.addEventListener('input', function () { ngayMuaInp.value = ngayMuaEl.textContent; });
+	  if (tinhTrangEl) tinhTrangEl.addEventListener('input', function () { fillCond(condValue(tinhTrangEl.textContent)); });
+	  if (ngayMuaEl) ngayMuaEl.addEventListener('input', function () { ngayMuaInp.value = dmyToIso(ngayMuaEl.textContent); });
 	  if (baoHanhEl) baoHanhEl.addEventListener('input', function () { baoHanhInp.value = baoHanhEl.textContent; });
 	  if (thuHoiEl) thuHoiEl.addEventListener('input', function () { thuHoiInp.value = thuHoiEl.textContent; });
 	});
+	highlightRow(openAssetIdx);
   }
+
+  // Bấm / gõ vào 1 dòng thiết bị trong biên bản -> mở đúng thẻ của dòng đó ở sidebar
+  function rowIndexOf(target) {
+	var tr = target.closest ? target.closest('#hwBody tr') : null;
+	if (!tr) return -1;
+	return Array.prototype.indexOf.call(document.querySelectorAll('#hwBody tr'), tr);
+  }
+  ['click', 'focusin'].forEach(function (evt) {
+	document.getElementById('hwBody').addEventListener(evt, function (e) {
+	  if (e.target.closest && e.target.closest('.row-del-btn')) return;
+	  var idx = rowIndexOf(e.target);
+	  if (idx >= 0 && idx !== openAssetIdx) openAsset(idx, true);
+	});
+  });
 
   /* ============================================================
    *  CÁC TRƯỜNG CHUNG
@@ -593,7 +764,7 @@ window.initBBBG = function () {
   function updateQuanLy() {
 	var val = document.getElementById('inpQuanLy').value.trim();
 	document.querySelectorAll('.quanLy').forEach(function (el) {
-	  el.textContent = val || 'HỒ HỮU THƯƠNG';
+	  el.textContent = val || 'ĐOÀN HỮU VINH';
 	});
   }
 
@@ -726,6 +897,59 @@ window.initBBBG = function () {
 	return [ma, nguoiNhan, ngayStr].filter(Boolean).join('_');
   }
 
+  // Đánh dấu phần trang 1 (mọi thứ trước mục II) = .pg1 để khi in / xuất Word được nén gọn hơn trang 2
+  var pageBreak = document.querySelector('.WordSection1 .page-break');
+  if (pageBreak) {
+	for (var pg1El = pageBreak.previousElementSibling; pg1El; pg1El = pg1El.previousElementSibling) {
+	  pg1El.classList.add('pg1');
+	}
+  }
+
+  /* ---- Tự canh trang: trang 1 và trang 2 đều vừa kín A4, không chừa khoảng trống cuối trang ----
+   * Bật html.fit-on (bố cục giống bản in, rộng 178mm), rồi dò nhị phân giá trị giãn dòng
+   * --lh1 (trang 1) / --lh2 (trang 2) lớn nhất mà nội dung vẫn lọt trong chiều cao vùng in A4. */
+  var PAGE_H_PX = (297 - 20) * 96 / 25.4;   // A4 cao 297mm - lề trên/dưới 2x10mm (khớp @page trong CSS)
+  var FIT_MIN = 1.1, FIT_MAX = 2.0;
+  var fitResult = { t1: 1.25, t2: 1.4 };
+
+  function measurePages() {
+	var ws = document.querySelector('.WordSection1');
+	var pb = ws.querySelector('.page-break');
+	var wsRect = ws.getBoundingClientRect();
+	var pbRect = pb.getBoundingClientRect();
+	return { p1: pbRect.top - wsRect.top, p2: wsRect.bottom - pbRect.bottom };
+  }
+
+  function fitOne(varName, key, limit) {
+	var root = document.documentElement;
+	function fits(t) {
+	  root.style.setProperty(varName, t.toFixed(3));
+	  return measurePages()[key] <= limit;
+	}
+	if (fits(FIT_MAX)) return FIT_MAX;
+	if (!fits(FIT_MIN)) return FIT_MIN;   // nội dung quá dài (vd. nhiều thiết bị) -> giữ gọn nhất
+	var lo = FIT_MIN, hi = FIT_MAX;
+	for (var i = 0; i < 14; i++) {
+	  var mid = (lo + hi) / 2;
+	  if (fits(mid)) lo = mid; else hi = mid;
+	}
+	root.style.setProperty(varName, lo.toFixed(3));
+	return lo;
+  }
+
+  function fitPages() {
+	if (!document.querySelector('.WordSection1 .page-break')) return fitResult;
+	document.documentElement.classList.add('fit-on');
+	var limit = PAGE_H_PX * 0.985;            // chừa ~4mm phòng sai số khi trình duyệt dàn trang in
+	fitResult = { t1: fitOne('--lh1', 'p1', limit), t2: fitOne('--lh2', 'p2', limit) };
+	return fitResult;
+  }
+  function unfitPages() { document.documentElement.classList.remove('fit-on'); }
+
+  // Ctrl+P hoặc nút "In / Xuất PDF" đều kích hoạt beforeprint
+  window.addEventListener('beforeprint', fitPages);
+  window.addEventListener('afterprint', unfitPages);
+
   // Thanh cố định trên cùng màn hình: chọn ngôn ngữ + 3 nút xuất (.docx / .doc / PDF) chung 1 hàng.
   // Sidebar bên trái chỉ còn phần nhập liệu.
   var exportRow = document.querySelector('.export-word-row');
@@ -741,7 +965,10 @@ window.initBBBG = function () {
   if (devBar) {
 	var devH = devBar.offsetHeight;
 	topBar.style.top = devH + 'px';
-	document.getElementById('editToolbar').style.top = (76 + devH) + 'px';
+	var sideBar = document.getElementById('editToolbar');
+	sideBar.style.top = (76 + devH) + 'px';
+	// Trừ luôn chiều cao thanh đỏ, nếu không đáy sidebar bị đẩy ra ngoài màn hình (không cuộn tới được)
+	sideBar.style.maxHeight = 'calc(100vh - ' + (96 + devH) + 'px)';
   }
   var oldRow = document.querySelector('#editToolbar .toolbar-row');
   if (oldRow && !oldRow.children.length) oldRow.remove();
@@ -802,14 +1029,16 @@ window.initBBBG = function () {
 	root.querySelectorAll('ul.plain').forEach(function (ul) {
 	  var inTable = !!ul.closest('table');
 	  var isSub = ul.classList.contains('sub');
+	  var isPg1 = ul.classList.contains('pg1');
+	  var lh = isPg1 ? wordLh.t1 : wordLh.t2;
 	  var left = inTable ? 10 : (isSub ? 45 : 27);   // pt
 	  var hang = inTable ? 8 : (isSub ? 13 : 11);    // pt — khoảng lùi cho ký tự bullet
 	  var frag = document.createDocumentFragment();
 	  Array.prototype.slice.call(ul.children).forEach(function (li) {
 		var p = document.createElement('p');
-		p.setAttribute('style', 'margin:0 0 ' + (inTable ? 0 : 4.5) + 'pt ' + left + 'pt;' +
+		p.setAttribute('style', 'margin:0 0 ' + (inTable ? '0pt' : fitSp(lh, 10)) + ' ' + left + 'pt;' +
 		  'text-indent:-' + hang + 'pt;text-align:' + (inTable ? 'left' : 'justify') + ';' +
-		  (inTable ? 'line-height:1.15;font-size:10.5pt;' : 'line-height:1.5;'));
+		  (inTable ? 'line-height:1.15;font-size:10.5pt;' : 'line-height:' + lh.toFixed(2) + ';'));
 		var bullet = document.createElement('span');
 		bullet.textContent = isSub ? 'o' : '-';
 		if (isSub) bullet.setAttribute('style', "font-family:'Courier New';");
@@ -826,7 +1055,9 @@ window.initBBBG = function () {
 	  addStyle(el, 'font-size:20pt;font-weight:bold;text-align:center;margin:0;line-height:1.5;');
 	});
 	root.querySelectorAll('.section-title').forEach(function (el) {
-	  addStyle(el, 'font-weight:bold;font-size:12pt;margin:12pt 0 6pt;line-height:1.5;');
+	  var lh = el.classList.contains('pg1') ? wordLh.t1 : wordLh.t2;
+	  addStyle(el, 'font-weight:bold;font-size:12pt;margin:' + fitSp(lh, 20) + ' 0 ' + fitSp(lh, 10) +
+		';line-height:' + lh.toFixed(2) + ';');
 	});
 	root.querySelectorAll('.center').forEach(function (el) { addStyle(el, 'text-align:center;'); });
 	root.querySelectorAll('.justify').forEach(function (el) { addStyle(el, 'text-align:justify;'); });
@@ -895,25 +1126,58 @@ window.initBBBG = function () {
 	  });
 	});
 
-	// 4) Ép font Times New Roman cho toàn bộ thẻ
-	// Đoạn văn ngoài bảng: giãn dòng 1.5 + cách đoạn như trên màn hình (Word không kế thừa từ thẻ cha)
+	// Đoạn văn ngoài bảng: giãn dòng + cách đoạn theo giá trị tự canh trang (Word không kế thừa từ thẻ cha)
 	root.querySelectorAll('p').forEach(function (p) {
 	  if (p.closest('table')) return;
+	  var lh = p.classList.contains('pg1') ? wordLh.t1 : wordLh.t2;
 	  var st = p.getAttribute('style') || '';
-	  if (!/line-height/.test(st)) addStyle(p, 'line-height:1.5;');
-	  if (!/margin/.test(st)) addStyle(p, 'margin:0 0 6pt;');
+	  if (!/line-height/.test(st)) addStyle(p, 'line-height:' + lh.toFixed(2) + ';');
+	  if (!/margin/.test(st)) addStyle(p, 'margin:0 0 ' + fitSp(lh, 10) + ';');
 	});
 
-	addStyle(root, TNR + 'font-size:12pt;line-height:1.5;text-align:justify;');
+	// 4) Ép font Times New Roman cho toàn bộ thẻ
+
+	addStyle(root, TNR + 'font-size:12pt;line-height:1.4;text-align:justify;');
 	root.querySelectorAll('*').forEach(function (el) {
 	  if (el.tagName === 'IMG' || el.tagName === 'BR') return;
 	  var cur = el.getAttribute('style') || '';
 	  el.setAttribute('style', TNR + (cur && cur.charAt(cur.length - 1) !== ';' ? cur + ';' : cur));
 	});
+
+	// 5) Word KHÔNG hiểu line-height dạng số không đơn vị (vd. 1.4) -> coi như giãn dòng đơn.
+	//    Đổi sang pt theo cỡ chữ của thẻ (vd. 12pt x 1.4 = 16.8pt), kiểu "at least" để không cắt dấu tiếng Việt.
+	function fontSizePt(el) {
+	  for (var n = el; n && n.getAttribute; n = n.parentNode) {
+		var m = /font-size:\s*([\d.]+)pt/.exec(n.getAttribute('style') || '');
+		if (m) return parseFloat(m[1]);
+	  }
+	  return 12;
+	}
+	[root].concat(Array.prototype.slice.call(root.querySelectorAll('*'))).forEach(function (el) {
+	  var st = el.getAttribute('style') || '';
+	  if (!/line-height:\s*[\d.]+\s*(;|$)/.test(st)) return;
+	  var fs = fontSizePt(el);
+	  el.setAttribute('style', st.replace(/line-height:\s*([\d.]+)\s*(;|$)/g, function (_, n) {
+		return 'line-height:' + (parseFloat(n) * fs).toFixed(1) + 'pt;mso-line-height-rule:at-least;';
+	  }));
+	});
   }
 
   // Dựng nội dung HTML dùng chung cho cả xuất .docx và .doc (bất đồng bộ vì cần nhúng ảnh base64)
-  function buildExportHtml() {
+  // Khoảng cách theo giãn dòng t — cùng công thức với CSS (html.fit-on): (t - 1) x hệ số pt
+  function fitSp(t, k) { return ((t - 1) * k).toFixed(1) + 'pt'; }
+  var wordLh = { t1: 1.25, t2: 1.4 };
+  // Word dàn trang khác trình duyệt (đo bằng Word thật): trang 2 thưa hơn, trang 1 (có bảng) dày hơn
+  // -> hiệu chỉnh riêng cho bản .doc/.docx
+  var WORD_ADJ = { t1: -0.20, t2: -0.03 };   // đã đo bằng Word thật: trang 2 kín ~98%, 1-3 thiết bị vừa trang 1
+  var WORD_MIN = 1.0;
+  var WORD_SIG_H = 45;   // chiều cao khoảng ký tên (px) trong file Word
+  var WORD_DOC_T2 = 0.07; // .doc (HTML) Word dàn gọn hơn .docx ~6% -> giãn thêm trang 2 cho kín
+
+  function buildExportHtml(isDoc) {
+	var fit = fitPages();
+	unfitPages();
+	wordLh = { t1: Math.max(WORD_MIN, fit.t1 + WORD_ADJ.t1), t2: Math.max(WORD_MIN, fit.t2 + WORD_ADJ.t2 + (isDoc ? WORD_DOC_T2 : 0)) };
 	var clone = document.querySelector('.WordSection1').cloneNode(true);
 
 	// Giá trị tài sản: nếu bỏ trống hoặc bằng 0 thì hiển thị dấu "-" thay vì "0 VNĐ"
@@ -931,7 +1195,7 @@ window.initBBBG = function () {
 	});
 	clone.querySelectorAll('.edit-hint, .row-del-btn, .row-thuhoi-btn').forEach(function (el) { el.remove(); });
 	clone.querySelectorAll('td[style*="height:80px"]').forEach(function (el) {
-	  el.style.height = '45px';
+	  el.style.height = WORD_SIG_H + 'px';
 	});
 	// Nếu đã bỏ chọn "Có Quản lý trực tiếp" thì loại hẳn cột đó khỏi file xuất
 	if (document.getElementById('sigTable').classList.contains('hide-quanly')) {
@@ -958,12 +1222,13 @@ window.initBBBG = function () {
 		'<head><meta charset="utf-8"><title>' + t('docTitle') + '</title>' +
 		'<!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View>' +
 		'<w:DoNotOptimizeForBrowser/></w:WordDocument></xml><![endif]-->' +
-		'<style>@page{size:21cm 29.7cm;margin:1.4cm 1.6cm;} ' +
+		'<style>@page WordSection1{size:21cm 29.7cm;margin:1cm 1.6cm;mso-header-margin:0.5cm;mso-footer-margin:0.5cm;} ' +
+		'div.WordSection1{page:WordSection1;} ' +   // .doc: Word chỉ áp lề trang khi gắn với trang có tên
 		'*{font-family:"Times New Roman",serif;mso-ascii-font-family:"Times New Roman";' +
 		'mso-hansi-font-family:"Times New Roman";mso-bidi-font-family:"Times New Roman";' +
 		'mso-fareast-font-family:"Times New Roman";} ' +
-		'body{font-family:"Times New Roman",serif;font-size:12pt;line-height:1.5;text-align:justify;} ' +
-		'p{margin:0 0 6pt;line-height:1.5;} table{border-collapse:collapse;width:100%;} ' +
+		'body{font-family:"Times New Roman",serif;font-size:12pt;line-height:16.8pt;text-align:justify;} ' +
+		'p{margin:0 0 4pt;line-height:16.8pt;} table{border-collapse:collapse;width:100%;} ' +
 		'ul{list-style:none;margin:0;padding:0;} ' +
 		'tr{page-break-inside:avoid;}</style></head><body>' + content + '</body></html>';
 	});
@@ -985,14 +1250,19 @@ window.initBBBG = function () {
 	  return;
 	}
 	buildExportHtml().then(function (html) {
-	  var blob = htmlDocx.asBlob(html);
+	  // html-docx-js KHÔNG đọc @page trong CSS (mặc định lề 2.54cm mỗi phía) -> phải truyền lề trực tiếp.
+	  // Đơn vị twip: 1mm = 56.7 twip. Khớp với bản PDF: trên/dưới 10mm, trái/phải 16mm.
+	  var blob = htmlDocx.asBlob(html, {
+		orientation: 'portrait',
+		margins: { top: 567, bottom: 567, left: 907, right: 907, header: 283, footer: 283, gutter: 0 }
+	  });
 	  downloadBlob(blob, buildFileBaseName() + '.docx');
 	});
   });
 
   // Xuất .doc kiểu cũ (HTML nhúng, không cần mạng, Word vẫn mở được)
   document.getElementById('exportDocBtn').addEventListener('click', function () {
-	buildExportHtml().then(function (html) {
+	buildExportHtml(true).then(function (html) {
 	  var blob = new Blob(['﻿', html], { type: 'application/msword' });
 	  downloadBlob(blob, buildFileBaseName() + '.doc');
 	});
