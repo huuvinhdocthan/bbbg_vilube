@@ -72,17 +72,30 @@ window.initBBBG = function () {
 	applyLanguage();
   }
 
+  // Cờ dạng SVG cho nút VI / EN — emoji cờ (🇻🇳 🇬🇧) không hiển thị trên Windows, chỉ ra chữ "VN"/"GB"
+  var FLAG_VI = '<svg class="lang-flag" viewBox="0 0 30 20" aria-hidden="true">' +
+	'<rect width="30" height="20" fill="#da251d"/>' +
+	'<polygon fill="#ffff00" points="15.00,4.40 16.39,8.68 20.90,8.68 17.25,11.33 18.64,15.62 15.00,12.97 11.36,15.62 12.75,11.33 9.10,8.68 13.61,8.68"/></svg>';
+  var FLAG_EN = '<svg class="lang-flag" viewBox="0 0 60 30" aria-hidden="true">' +
+	'<clipPath id="ukClip"><path d="M30,15h30v15zv15h-30zh-30v-15zv-15h30z"/></clipPath>' +
+	'<path d="M0,0v30h60v-30z" fill="#012169"/>' +
+	'<path d="M0,0 60,30M60,0 0,30" stroke="#fff" stroke-width="6"/>' +
+	'<path d="M0,0 60,30M60,0 0,30" clip-path="url(#ukClip)" stroke="#c8102e" stroke-width="4"/>' +
+	'<path d="M30,0v30M0,15h60" stroke="#fff" stroke-width="10"/>' +
+	'<path d="M30,0v30M0,15h60" stroke="#c8102e" stroke-width="6"/></svg>';
+  document.getElementById('langViBtn').innerHTML = FLAG_VI + '<span>Tiếng Việt</span>';
+  document.getElementById('langEnBtn').innerHTML = FLAG_EN + '<span>English</span>';
+
   document.getElementById('langViBtn').addEventListener('click', function () { setLang('vi'); });
   document.getElementById('langEnBtn').addEventListener('click', function () { setLang('en'); });
 
   /* ============================================================
    *  PANEL CHỈNH SỬA NHANH
    * ============================================================ */
+  // Panel luôn mở — bỏ nút "Chỉnh sửa nhanh" (chỉ dùng để ẩn/hiện panel, không cần thiết)
   var toggleBtn = document.getElementById('toggleEditBtn');
-  var panel = document.getElementById('editPanel');
-  toggleBtn.addEventListener('click', function () {
-	panel.classList.toggle('open');
-  });
+  if (toggleBtn) toggleBtn.remove();
+  document.getElementById('editPanel').classList.add('open');
 
   function pad(n) { return String(n).padStart(2, '0'); }
 
@@ -535,49 +548,24 @@ window.initBBBG = function () {
    *  CÁC TRƯỜNG CHUNG
    * ============================================================ */
 
-  // Dựng 3 ô chọn Ngày / Tháng / Năm, mặc định theo giá trị ban đầu
+  // 1 ô chọn ngày có lịch (thay cho 3 ô Ngày / Tháng / Năm) — dựng ngay tại chỗ của khung cũ
   function initDatePicker(defaultY, defaultM, defaultD) {
-	var selDay = document.getElementById('selNgayDay');
-	var selMonth = document.getElementById('selNgayMonth');
-	var selYear = document.getElementById('selNgayYear');
-
-	for (var d = 1; d <= 31; d++) {
-	  var optD = document.createElement('option');
-	  optD.value = pad(d);
-	  optD.textContent = pad(d);
-	  selDay.appendChild(optD);
-	}
-	for (var m = 1; m <= 12; m++) {
-	  var optM = document.createElement('option');
-	  optM.value = pad(m);
-	  optM.textContent = pad(m);
-	  selMonth.appendChild(optM);
-	}
-	var thisYear = new Date().getFullYear();
-	var startYear = Math.min(thisYear, parseInt(defaultY, 10)) - 5;
-	var endYear = Math.max(thisYear, parseInt(defaultY, 10)) + 5;
-	for (var y = startYear; y <= endYear; y++) {
-	  var optY = document.createElement('option');
-	  optY.value = String(y);
-	  optY.textContent = String(y);
-	  selYear.appendChild(optY);
-	}
-
-	selDay.value = defaultD;
-	selMonth.value = defaultM;
-	selYear.value = defaultY;
-
-	selDay.addEventListener('change', updateNgay);
-	selMonth.addEventListener('change', updateNgay);
-	selYear.addEventListener('change', updateNgay);
+	var grid = document.querySelector('.date-picker-grid');
+	var inp = document.createElement('input');
+	inp.type = 'date';
+	inp.id = 'inpNgay';
+	inp.value = defaultY + '-' + defaultM + '-' + defaultD;
+	grid.parentNode.replaceChild(inp, grid);
+	inp.addEventListener('change', updateNgay);
+	// Bấm vào bất kỳ đâu trên ô cũng mở lịch (không chỉ biểu tượng lịch)
+	inp.addEventListener('click', function () {
+	  if (typeof inp.showPicker === 'function') { try { inp.showPicker(); } catch (e) { /* bỏ qua */ } }
+	});
   }
 
   function getNgayParts() {
-	return {
-	  d: document.getElementById('selNgayDay').value,
-	  m: document.getElementById('selNgayMonth').value,
-	  y: document.getElementById('selNgayYear').value
-	};
+	var v = (document.getElementById('inpNgay').value || '').split('-');
+	return { y: v[0] || '', m: v[1] || '', d: v[2] || '' };
   }
 
   function updateNgay() {
@@ -633,6 +621,48 @@ window.initBBBG = function () {
   document.getElementById('inpQuanLy').addEventListener('input', updateQuanLy);
   document.getElementById('inpBoPhan').addEventListener('input', updateBoPhan);
   document.getElementById('inpPhongBan').addEventListener('input', updatePhongBan);
+
+  // Phòng ban (Bên B): danh sách chọn sẵn + mục "Khác" để tự nhập
+  var DEPARTMENTS = [
+	'Warehouse', 'MAP CS', 'D-Center', 'D-LAB', 'Engineering',
+	'Factory', 'Factory Office', 'Finance', 'HR & Admin', 'HSE', 'IT', 'Marketing', 'Motul Tech',
+	'PI&HSE', 'Production', 'Project', 'QA', 'Quality', 'Regional', 'Sales AO', 'Sales B2B',
+	'Sales B2C', 'Sales CI', 'Supply Chain', 'Supply Chain & Operations',
+	'Supply Planning', 'Sustainability'
+  ];
+  var DEPT_OTHER = '__other__';
+  (function () {
+	var inp = document.getElementById('inpPhongBan');
+	var sel = document.createElement('select');
+	sel.id = 'selPhongBan';
+	DEPARTMENTS.forEach(function (name) {
+	  var opt = document.createElement('option');
+	  opt.value = name;
+	  opt.textContent = name;
+	  sel.appendChild(opt);
+	});
+	var optOther = document.createElement('option');
+	optOther.value = DEPT_OTHER;
+	optOther.textContent = '✏️ Khác / Other (tự nhập)…';
+	sel.appendChild(optOther);
+	inp.parentNode.insertBefore(sel, inp);
+	inp.placeholder = 'Nhập tên phòng ban…';
+
+	function syncDept() {
+	  var isOther = sel.value === DEPT_OTHER;
+	  inp.style.display = isOther ? '' : 'none';
+	  if (isOther) {
+		inp.value = '';
+		inp.focus();
+	  } else {
+		inp.value = sel.value;
+	  }
+	  updatePhongBan();
+	}
+	sel.addEventListener('change', syncDept);
+	sel.value = 'Sales B2C';
+	syncDept();
+  })();
 
   // Bật/tắt cột "Quản lý trực tiếp" trong bảng chữ ký — xóa nếu không cần
   var chkQuanLy = document.getElementById('chkQuanLy');
@@ -696,6 +726,26 @@ window.initBBBG = function () {
 	return [ma, nguoiNhan, ngayStr].filter(Boolean).join('_');
   }
 
+  // Thanh cố định trên cùng màn hình: chọn ngôn ngữ + 3 nút xuất (.docx / .doc / PDF) chung 1 hàng.
+  // Sidebar bên trái chỉ còn phần nhập liệu.
+  var exportRow = document.querySelector('.export-word-row');
+  exportRow.appendChild(document.getElementById('exportPdfBtn'));
+  var topBar = document.createElement('div');
+  topBar.id = 'docTopBar';
+  topBar.appendChild(document.querySelector('.lang-switch'));
+  topBar.appendChild(exportRow);
+  document.body.insertBefore(topBar, document.body.firstChild);
+  document.body.classList.add('has-topbar');
+  // tao-mat-khau.html có thanh đỏ #devBar dính trên cùng -> đặt thanh này ngay bên dưới nó
+  var devBar = document.getElementById('devBar');
+  if (devBar) {
+	var devH = devBar.offsetHeight;
+	topBar.style.top = devH + 'px';
+	document.getElementById('editToolbar').style.top = (76 + devH) + 'px';
+  }
+  var oldRow = document.querySelector('#editToolbar .toolbar-row');
+  if (oldRow && !oldRow.children.length) oldRow.remove();
+
   // Print / PDF export — đặt tạm tiêu đề trang để trình duyệt gợi ý đúng tên file khi "Save as PDF"
   document.getElementById('exportPdfBtn').addEventListener('click', function () {
 	var originalTitle = document.title;
@@ -740,26 +790,35 @@ window.initBBBG = function () {
 	el.setAttribute('style', cur + css);
   }
 
-  var TNR = "font-family:'Times New Roman',serif;";
+  var TNR = "font-family:'Times New Roman',serif;mso-ascii-font-family:'Times New Roman';" +
+	"mso-hansi-font-family:'Times New Roman';mso-bidi-font-family:'Times New Roman';";
 
   /* Word (.doc/.docx) KHÔNG đọc CSS trong thẻ <style> và KHÔNG hiểu pseudo-element (:before).
    * Vì vậy phải ép mọi định dạng thành style nội tuyến và đổi bullet giả thành ký tự thật. */
   function prepareForWord(root) {
-	// 1) Bullet giả (:before) -> ký tự thật
-	root.querySelectorAll('ul.plain > li').forEach(function (li) {
-	  var isSub = li.parentNode.classList.contains('sub');
-	  li.insertBefore(document.createTextNode(isSub ? 'o  ' : '-  '), li.firstChild);
-	  addStyle(li, 'list-style:none;margin:0 0 4pt;text-align:justify;');
-	});
+	// 1) Danh sách -> đoạn <p> thụt lề treo + ký tự bullet thật.
+	//    Word bỏ qua list-style:none nên nếu giữ <ul>/<li> sẽ bị thêm bullet thứ hai.
+	//    Lề lấy theo CSS bản in (PDF): ngoài bảng 36px, mục con thêm 24px, trong bảng 14px.
 	root.querySelectorAll('ul.plain').forEach(function (ul) {
-	  addStyle(ul, 'list-style:none;margin:0;padding-left:22px;');
-	});
-	// Danh sách nằm TRONG bảng: nén sát lại, bỏ khoảng cách thừa cho đỡ tốn trang
-	root.querySelectorAll('table.doc-table ul.plain').forEach(function (ul) {
-	  addStyle(ul, 'padding-left:10px;margin:0;');
-	});
-	root.querySelectorAll('table.doc-table ul.plain > li').forEach(function (li) {
-	  addStyle(li, 'margin:0;line-height:1.15;text-align:left;');
+	  var inTable = !!ul.closest('table');
+	  var isSub = ul.classList.contains('sub');
+	  var left = inTable ? 10 : (isSub ? 45 : 27);   // pt
+	  var hang = inTable ? 8 : (isSub ? 13 : 11);    // pt — khoảng lùi cho ký tự bullet
+	  var frag = document.createDocumentFragment();
+	  Array.prototype.slice.call(ul.children).forEach(function (li) {
+		var p = document.createElement('p');
+		p.setAttribute('style', 'margin:0 0 ' + (inTable ? 0 : 4.5) + 'pt ' + left + 'pt;' +
+		  'text-indent:-' + hang + 'pt;text-align:' + (inTable ? 'left' : 'justify') + ';' +
+		  (inTable ? 'line-height:1.15;font-size:10.5pt;' : 'line-height:1.5;'));
+		var bullet = document.createElement('span');
+		bullet.textContent = isSub ? 'o' : '-';
+		if (isSub) bullet.setAttribute('style', "font-family:'Courier New';");
+		p.appendChild(bullet);
+		p.appendChild(document.createTextNode('\u00a0\u00a0'));
+		while (li.firstChild) p.appendChild(li.firstChild);
+		frag.appendChild(p);
+	  });
+	  ul.parentNode.replaceChild(frag, ul);
 	});
 
 	// 2) Định dạng theo lớp -> style nội tuyến
@@ -767,7 +826,7 @@ window.initBBBG = function () {
 	  addStyle(el, 'font-size:20pt;font-weight:bold;text-align:center;margin:0;line-height:1.5;');
 	});
 	root.querySelectorAll('.section-title').forEach(function (el) {
-	  addStyle(el, 'font-weight:bold;font-size:12pt;margin:6pt 0 3pt;');
+	  addStyle(el, 'font-weight:bold;font-size:12pt;margin:12pt 0 6pt;line-height:1.5;');
 	});
 	root.querySelectorAll('.center').forEach(function (el) { addStyle(el, 'text-align:center;'); });
 	root.querySelectorAll('.justify').forEach(function (el) { addStyle(el, 'text-align:justify;'); });
@@ -791,8 +850,61 @@ window.initBBBG = function () {
 	  addStyle(td, 'text-align:center;');
 	});
 
+	// Bảng thông tin Bên A / Bên B: nhãn ("BÊN B - NGƯỜI NHẬN:") giữ trên 1 dòng như bản PDF.
+	// Font Times trong Word rộng hơn trình duyệt nên nới cột nhãn và cấm xuống dòng.
+	root.querySelectorAll('table.plain-table:not(.center) tr').forEach(function (tr) {
+	  var cells = tr.children;
+	  if (cells.length === 3) {
+		cells[0].setAttribute('width', '32%');
+		cells[1].setAttribute('width', '32%');
+		cells[2].setAttribute('width', '36%');
+	  }
+	  var label = cells[0];
+	  if (!label) return;
+	  label.setAttribute('nowrap', 'nowrap');
+	  addStyle(label, 'white-space:nowrap;');
+	  var walker = document.createTreeWalker(label, NodeFilter.SHOW_TEXT);
+	  while (walker.nextNode()) {
+		walker.currentNode.textContent = walker.currentNode.textContent.replace(/ /g, '\u00a0');
+	  }
+	});
+
+	// 3b) Chữ nằm thẳng trong ô bảng (không có <p> bao ngoài) bị Word lấy font mặc định của bảng
+	//     thay vì Times New Roman -> gom các đoạn chữ/thẻ inline liên tiếp vào <p> riêng.
+	var BLOCK_TAGS = { P: 1, DIV: 1, UL: 1, OL: 1, TABLE: 1 };
+	root.querySelectorAll('td').forEach(function (td) {
+	  var tr = td.parentNode;
+	  var align = (td.classList.contains('center') || tr.classList.contains('center') ||
+		td.closest('table').classList.contains('center')) ? 'center' : 'left';
+	  var pStyle = 'margin:0;line-height:1.15;text-align:' + align + ';' +
+		'font-size:' + (td.closest('table.doc-table') ? '10.5pt' : '12pt') + ';' +
+		((td.classList.contains('bold') || tr.classList.contains('bold')) ? 'font-weight:bold;' : '');
+	  var run = null;
+	  Array.prototype.slice.call(td.childNodes).forEach(function (node) {
+		if (node.nodeType === 1 && BLOCK_TAGS[node.tagName]) { run = null; return; }
+		if (node.nodeType === 3 && !node.textContent.trim()) {
+		  if (run) run.appendChild(node); else td.removeChild(node);
+		  return;
+		}
+		if (!run) {
+		  run = document.createElement('p');
+		  run.setAttribute('style', pStyle);
+		  td.insertBefore(run, node);
+		}
+		run.appendChild(node);
+	  });
+	});
+
 	// 4) Ép font Times New Roman cho toàn bộ thẻ
-	addStyle(root, TNR + 'font-size:12pt;line-height:1.3;text-align:justify;');
+	// Đoạn văn ngoài bảng: giãn dòng 1.5 + cách đoạn như trên màn hình (Word không kế thừa từ thẻ cha)
+	root.querySelectorAll('p').forEach(function (p) {
+	  if (p.closest('table')) return;
+	  var st = p.getAttribute('style') || '';
+	  if (!/line-height/.test(st)) addStyle(p, 'line-height:1.5;');
+	  if (!/margin/.test(st)) addStyle(p, 'margin:0 0 6pt;');
+	});
+
+	addStyle(root, TNR + 'font-size:12pt;line-height:1.5;text-align:justify;');
 	root.querySelectorAll('*').forEach(function (el) {
 	  if (el.tagName === 'IMG' || el.tagName === 'BR') return;
 	  var cur = el.getAttribute('style') || '';
@@ -826,8 +938,13 @@ window.initBBBG = function () {
 	  clone.querySelectorAll('.col-quanly').forEach(function (el) { el.remove(); });
 	}
 
-	// Bỏ hẳn dấu ngắt trang cố định — để nội dung chạy tự nhiên, không chừa trang trống
-	clone.querySelectorAll('.page-break').forEach(function (el) { el.remove(); });
+	// Dấu ngắt trang trước mục II -> ngắt trang thật của Word
+	clone.querySelectorAll('.page-break').forEach(function (el) {
+	  var br = document.createElement('br');
+	  br.setAttribute('clear', 'all');
+	  br.setAttribute('style', 'mso-special-character:line-break;page-break-before:always;');
+	  el.parentNode.replaceChild(br, el);
+	});
 
 	// Ép định dạng trực tiếp vào từng thẻ (Word/docx không đọc CSS trong <style> và không hiểu :before)
 	prepareForWord(clone);
@@ -845,9 +962,9 @@ window.initBBBG = function () {
 		'*{font-family:"Times New Roman",serif;mso-ascii-font-family:"Times New Roman";' +
 		'mso-hansi-font-family:"Times New Roman";mso-bidi-font-family:"Times New Roman";' +
 		'mso-fareast-font-family:"Times New Roman";} ' +
-		'body{font-family:"Times New Roman",serif;font-size:12pt;line-height:1.3;text-align:justify;} ' +
-		'p{margin:0 0 4pt;} table{border-collapse:collapse;width:100%;} ' +
-		'ul{list-style:none;margin:0;padding-left:22px;} ' +
+		'body{font-family:"Times New Roman",serif;font-size:12pt;line-height:1.5;text-align:justify;} ' +
+		'p{margin:0 0 6pt;line-height:1.5;} table{border-collapse:collapse;width:100%;} ' +
+		'ul{list-style:none;margin:0;padding:0;} ' +
 		'tr{page-break-inside:avoid;}</style></head><body>' + content + '</body></html>';
 	});
   }

@@ -47,7 +47,7 @@
 	min-height:100vh;
 	box-sizing:border-box;
  }
- .doc-wrapper { flex:1; display:flex; justify-content:center; }
+ .doc-wrapper { flex:1; display:flex; flex-direction:column; align-items:center; gap:12px; min-width:0; }
  .WordSection1 {
 	max-width:800px;
 	width:100%;
@@ -64,6 +64,8 @@
  table.doc-table { border-collapse:collapse; width:100%; }
  table.doc-table td { border:1px solid #000; padding:4px 6px; vertical-align:middle; font-size:10.5pt; text-align:left; }
  table.plain-table td { padding:2px 6px; vertical-align:middle; }
+ /* Nhãn Bên A / Bên B ("BÊN B - NGƯỜI NHẬN:") luôn nằm trên 1 dòng — trên trang, PDF và bản in */
+ table.plain-table:not(.center) td:first-child { white-space:nowrap; }
  .center { text-align:center; }
  .justify { text-align:justify; }
  .bold { font-weight:bold; }
@@ -80,8 +82,9 @@
  table.doc-table ul.plain li { text-align:left; margin-bottom:0 !important; line-height:1.25; }
  table.doc-table ul.plain li:before { left:-11px; }
  table.doc-table .editable-field[data-role="ten"] { margin-bottom:1px; }
- /* Không ngắt trang cố định — nội dung chạy tự nhiên, chỉ tránh cắt đôi bảng/danh sách */
- .page-break { display:none; }
+ /* Ngắt trang cố định trước mục "II. Đền bù" — mục II luôn bắt đầu ở đầu trang mới khi in/PDF */
+ .page-break { height:0; margin:0; padding:0; }
+ @media print { .page-break { page-break-before:always; break-before:page; } }
  @media print {
 	table { page-break-inside:avoid; break-inside:avoid; }
 	ul.plain { page-break-inside:avoid; break-inside:avoid; }
@@ -126,20 +129,28 @@
  }
  #editToolbar button.secondary { background:#eef2f8; color:#3a4a5f; border:1px solid #cfd9e6; }
  #editToolbar button:hover { opacity:.88; }
- .export-word-row { display:flex; gap:8px; }
- .export-word-row button { flex:1 1 0; min-width:0; padding:8px 6px; }
+ /* 3 nút xuất file chung 1 hàng, mỗi loại 1 màu: .docx xanh dương, .doc xanh lá, PDF đỏ */
+ .export-word-row { display:flex; gap:6px; }
+ #docTopBar .export-word-row button { flex:1 1 0; width:auto; min-width:0; padding:8px 4px; white-space:nowrap; font-weight:bold; font-size:12px; }
+ #docTopBar .export-word-row #exportPdfBtn { flex-grow:1.4; }  /* nhãn PDF dài hơn ("In / Xuất PDF", "Print / Export PDF") */
+ #docTopBar .export-word-row #exportDocxBtn { background:#2b579a; color:#fff; border:1px solid #2b579a; }
+ #docTopBar .export-word-row #exportDocBtn  { background:#1e8e5a; color:#fff; border:1px solid #1e8e5a; }
+ #docTopBar .export-word-row #exportPdfBtn  { background:#c4314b; color:#fff; border:1px solid #c4314b; }
 
  /* ---- Nút chuyển ngôn ngữ VI / EN ---- */
  .lang-switch {
 	display:flex; gap:0; margin-bottom:12px;
 	background:#eef2f8; border:1px solid #dbe3ee; border-radius:6px; padding:3px;
  }
- #editToolbar .lang-switch button {
+ #docTopBar .lang-switch button {
 	flex:1 1 0; width:auto; background:transparent; color:#6b7c93; border:none;
 	border-radius:4px; padding:6px 0; font-size:12px; font-weight:bold;
  }
- #editToolbar .lang-switch button.active { background:#2f7dee; color:#fff; }
- #editToolbar .lang-switch button:hover { opacity:1; }
+ #docTopBar .lang-switch button { display:flex; align-items:center; justify-content:center; gap:7px; font-size:13px; padding:7px 0; }
+ .lang-flag { width:24px; height:16px; border-radius:2px; box-shadow:0 0 0 1px rgba(0,0,0,.15); flex-shrink:0; }
+ #docTopBar .lang-switch button:not(.active) .lang-flag { opacity:.75; }
+ #docTopBar .lang-switch button.active { background:#2f7dee; color:#fff; }
+ #docTopBar .lang-switch button:hover { opacity:1; }
  #editPanel {
 	display:none; margin-top:10px; padding-top:10px;
 	border-top:1px solid #e3e9f2;
@@ -213,16 +224,63 @@
 	#editToolbar { display:none !important; }
 	.app-layout { display:block; padding:0; }
 	.doc-wrapper { display:block; }
-	.WordSection1 {
-	  box-shadow:none; margin:0; padding:0; max-width:100%;
-	  line-height:1.2 !important;
-	}
-	.WordSection1 p, .WordSection1 li, .WordSection1 td, .WordSection1 div {
-	  line-height:1.2 !important;
-	}
-	.WordSection1 p { margin-bottom:4pt !important; }
-	ul.plain li { margin-bottom:2pt !important; }
+	/* Giãn dòng & khoảng cách giống trên màn hình (1.5) — chỉ bảng thiết bị được nén gọn */
+	.WordSection1 { box-shadow:none; margin:0; padding:0; max-width:100%; }
 	.editable-field { border-bottom:none !important; background:transparent !important; }
 	.edit-hint { display:none !important; }
 	.row-del-btn, .row-thuhoi-btn { display:none !important; }
+ }
+
+ /* ---- Panel nhập liệu: font giao diện dễ đọc, ô nhập to & đều nhau ----
+  * (Chỉ áp dụng cho sidebar — nội dung biên bản vẫn giữ Times New Roman) */
+ #editToolbar, #editToolbar button, #editToolbar input, #editToolbar select,
+ .catalog-box .catalog-target, .catalog-box .catalog-search {
+	font-family:"Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+ }
+ #editPanel { gap:12px; }
+ #editPanel label { gap:4px; font-size:12.5px; font-weight:600; color:#334155; }
+ #editPanel input:not([type="checkbox"]), #editPanel select,
+ .asset-panel-grid input, .asset-panel-item input {
+	height:36px; padding:6px 10px; font-size:14px; font-weight:400;
+	border:1px solid #cbd5e1; border-radius:6px; color:#1e293b;
+ }
+ #editPanel input:focus, #editPanel select:focus {
+	border-color:#2f7dee; box-shadow:0 0 0 3px rgba(47,125,238,.18);
+ }
+ #editPanel input[type="date"] { cursor:pointer; }
+ .asset-panel-grid { gap:10px; }
+ .checkbox-row { font-weight:500 !important; cursor:pointer; }
+ .checkbox-row input[type="checkbox"] { width:16px !important; height:16px; margin:0; accent-color:#2f7dee; cursor:pointer; }
+ .panel-section-title {
+	font-size:13.5px; color:#1e293b; margin:6px 0 2px;
+	padding-top:12px; border-top:1px solid #e3e9f2;
+ }
+ .asset-panel-item { padding:10px; gap:8px; }
+ .asset-panel-item .asset-panel-title { font-size:12px; color:#475569; }
+ .catalog-box .catalog-target, .catalog-box .catalog-search { font-size:13px; height:34px; }
+
+ /* ---- Thanh trên cùng màn hình (ngôn ngữ + xuất file) — CỐ ĐỊNH, không trôi khi cuộn ---- */
+ #docTopBar {
+	position:fixed; top:0; left:0; right:0; z-index:1000;
+	height:56px; box-sizing:border-box;
+	display:flex; align-items:center; justify-content:center; gap:12px;
+	background:#fff; border-bottom:1px solid #d5dde8;
+	padding:0 16px; box-shadow:0 2px 10px rgba(0,0,0,.08);
+	font-family:"Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+ }
+ /* Chừa chỗ cho thanh cố định để không che nội dung */
+ body.has-topbar .app-layout { padding-top:76px; }
+ body.has-topbar #editToolbar { top:76px; max-height:calc(100vh - 96px); }
+ #docTopBar button {
+	border:none; border-radius:6px; padding:8px 14px; font-size:13px; cursor:pointer;
+	font-family:inherit; color:#fff;
+ }
+ #docTopBar button:hover { opacity:.88; }
+ #docTopBar .lang-switch { flex:0 0 250px; margin:0; }
+ #docTopBar .export-word-row { flex:0 1 520px; min-width:0; }
+ /* Sidebar giờ chỉ còn khung nhập liệu — bỏ đường kẻ/khoảng trống phía trên */
+ #editPanel { margin-top:0; padding-top:0; border-top:none; }
+ @media print {
+	#docTopBar { display:none !important; }
+	body.has-topbar .app-layout { padding-top:0; }
  }
